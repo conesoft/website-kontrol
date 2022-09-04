@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace Conesoft_Website_Kontrol.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <link rel="manifest" href="/icons/site.webmanifest">
+    <link rel="shortcut icon" href="/icons/favicon.ico">
+    <meta name="apple-mobile-web-app-title" content="Kontrol">
+    <meta name="application-name" content="Kontrol">
+    <meta name="theme-color" content="#000000">
+
+    <title>Kontrol</title>
+    <meta name="description" content="Kontrol by Conesoft">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Kontrol">
+    <meta property="og:description" content="Kontrol by Conesoft">
+    <meta property="og:image" content="/meta-image.jpg">
+
+    <meta name="viewport" content="width=device-width">
+    <base href="~/">
+    <link rel="stylesheet" type="text/css" href="https://cdn.conesoft.net/style.min.css?v=f3932757934b854eca2ebcfbdc169323">
+
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>
