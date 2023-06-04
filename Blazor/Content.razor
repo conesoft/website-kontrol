@@ -1,0 +1,54 @@
+﻿@page "/content"
+@using Conesoft_Website_Kontrol.Tools;
+@using System.Diagnostics;
+@using Humanizer;
+@using System.Text.RegularExpressions;
+@using System.Net;
+
+<PageTitle>Content Kontrol</PageTitle>
+
+<section>
+    <ul>
+        @foreach(var entry in Entries)
+        {
+            <li>
+                <h2>@WebUtility.HtmlDecode(entry.Name)</h2>
+                <a href="@entry.Url" target="_blank">@entry.Url.CleanUrl()</a>
+                @if(string.IsNullOrWhiteSpace(entry.ImageFilename) == false)
+                {
+                    <img src="/content/feeds/thumbnail/@entry.ImageFilename">
+                }
+                <p>@WebUtility.HtmlDecode(Regex.Replace(entry.Description, "<.*?>", string.Empty))</p>
+            </li>
+        }
+    </ul>
+</section>
+
+@code {
+    static Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.GlobalStorage / "FromSources" / "Feeds" / "Entries";
+
+    public List<Entry> Entries { get; set; } = new List<Entry>();
+
+    public record Entry(string Name, string Url, DateTime Published, string Description, string Category, string Filename)
+    {
+        public string? ImageFilename => Storage
+            .Filtered($"{Filename}.*", false)
+            .Where(f => !f.Extension.EndsWith("json"))
+            .FirstOrDefault()?.Name ?? null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var entries = (await Task.WhenAll(Storage
+            .Filtered("*.json", allDirectories: false)
+            .Select(async f => await f.ReadFromJson<Entry>())
+        )).NotNull().OrderByDescending(e => e.Published).ToArray();
+
+        foreach(var chunk in entries.Chunk(15))
+        {
+            Entries.AddRange(chunk);
+            StateHasChanged();
+            await Task.Yield();
+        }
+    }
+}

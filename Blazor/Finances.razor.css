@@ -1,0 +1,202 @@
+﻿section[layout=home] ul li {
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+    grid-gap: 0 1rem;
+    margin: 0;
+    min-height: calc(5rem + 2 * 1rem);
+    padding-block: 1rem;
+}
+
+section[layout=home] ul h2 {
+    grid-column: 1 / -1;
+    height: 3rem;
+    line-height: 3rem;
+}
+
+section[layout=home] button {
+    margin: 0;
+    padding: 0;
+    position: initial;
+    width: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 3rem;
+}
+
+    section[layout=home] button:disabled {
+        opacity: 0.3;
+    }
+
+    section[layout=home] button.on {
+        opacity: 1;
+        box-shadow: 0 0 1rem lightyellow;
+    }
+
+    section[layout=home] button.off {
+        opacity: 0.8;
+    }
+
+    section[layout=home] button.wide {
+        grid-column: span 2;
+        aspect-ratio: revert;
+    }
+
+
+button, input[type=submit], label:has(input[type=radio]), nav a {
+    background-color: #222;
+    border: .25rem solid #444;
+    padding: .25rem;
+    color: #ddd;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    transition: all .33s linear
+}
+
+    button:hover:not(:disabled), input[type=submit]:hover:not(:disabled), label:has(input[type=radio]):hover:not(:disabled), nav a:hover:not(:disabled) {
+        border-color: #ddd
+    }
+
+    button:disabled, input[type=submit]:disabled, label:has(input[type=radio]):disabled, nav a:disabled {
+        opacity: .7
+    }
+
+label:has(input[type=radio]:checked) {
+    border: .25rem solid #FFF;
+}
+
+label > input[type=radio] {
+    display: none;
+}
+
+label:has(input[type=radio]) {
+    text-align: center;
+}
+
+
+input {
+    text-align: center;
+    background-color: #222;
+    border: .25rem solid #444;
+    padding: .25rem;
+    color: #ddd;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    transition: all .33s linear
+}
+
+    input:hover:not(:disabled) {
+        border-color: #ddd
+    }
+
+    input:disabled {
+        opacity: .7
+    }
+
+fieldset {
+    border: none;
+}
+
+    fieldset legend {
+        height: 2rem;
+        line-height: 2rem;
+    }
+
+input[type=submit] {
+    margin-top: 1rem;
+    font-weight: 900;
+}
+
+::-webkit-calendar-picker-indicator {
+    display: inline;
+    filter: invert(100%);
+    position: absolute;
+    right: 0.25rem;
+}
+
+
+*[horizontal] {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+}
+
+li {
+    list-style-type: none;
+    position: relative
+}
+
+    li:nth-child(2n+1) {
+        background-color: #111
+    }
+
+    li:nth-child(2n) {
+        background-color: #222
+    }
+
+    li button {
+        position: absolute;
+        right: .5rem;
+        top: .5rem;
+        bottom: .5rem;
+        width: 4rem;
+        opacity: .3
+    }
+
+        li button:hover {
+            opacity: 1
+        }
+
+html {
+    padding: .25rem
+}
+
+li, h1, b, progress {
+    padding: .5rem 0
+}
+
+progress {
+    height: 3rem
+}
+
+
+table, table * {
+    display: revert;
+    border-collapse: collapse;
+}
+
+td {
+    white-space: nowrap;
+}
+
+    td:not(:first-of-type) {
+        text-align: right;
+    }
+
+tr td:first-of-type {
+    position: relative;
+}
+
+    tr td:first-of-type > * {
+        position: absolute;
+        width: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        text-overflow: ellipsis;
+    }
+
+*[hidden] {
+    display: none;
+}
+
+*.bill b {
+    color: darkred;
+}
+
+*.income b {
+    color: darkgoldenrod;
+}
+
+*.compensation b {
+    color: cornflowerblue;
+}

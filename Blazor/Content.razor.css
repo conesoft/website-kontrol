@@ -1,0 +1,44 @@
+﻿li {
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    padding: 0;
+    grid-template:
+        ". image . . ." 1rem
+        ". image . title ." auto
+        ". image . link ." auto
+        ". image . description ." 1fr
+        ". image . . ." 1rem
+        / 0 10rem 1rem auto 1rem
+}
+
+    li h2 {
+        grid-area: title;
+        font-weight: 900;
+        color: springgreen
+    }
+
+    li a {
+        grid-area: link;
+        padding: 0.5rem 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    li img {
+        grid-area: image;
+        place-self: stretch;
+        object-fit: cover;
+        max-height: 100%;
+        aspect-ratio: 1;
+    }
+
+    li p {
+        grid-area: description;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height:  5rem;
+        line-height: 1rem;
+        font-weight: 100;
+        opacity: 0.5;
+    }
