@@ -10,16 +10,7 @@
     var seasons = 7;
 }
 
-<Meta name="description" content="@showname" />
-<Meta property="og:type" content="website" />
-<Meta property="og:title" content="@showname" />
-<Meta property="og:description" content="TV Show" />
-
-<Meta name="twitter:card" content="summary_large_image" />
-<Meta name="twitter:title" content="@showname" />
-<Meta name="twitter:description" content="TV Show" />
-
-<Title>@showname</Title>
+<PageTitle>@showname</PageTitle>
 
 <header>
     <h1>
@@ -45,8 +36,17 @@
             if (ogimage == null)
             {
                 ogimage = url + ":thumbnail.jpg";
-                <Meta property="og:image" content="@ogimage" />
-                <Meta name="twitter:image" content="@ogimage" />
+                <HeadContent>
+                    <meta name="description" content="@showname" />
+                    <meta property="og:type" content="website" />
+                    <meta property="og:title" content="@showname" />
+                    <meta property="og:description" content="TV Show" />
+                    <meta property="og:image" content="@ogimage" />
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content="@showname" />
+                    <meta name="twitter:description" content="TV Show" />
+                    <meta name="twitter:image" content="@ogimage" />
+                </HeadContent>
             }
 
             <article>

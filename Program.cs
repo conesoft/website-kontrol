@@ -4,7 +4,6 @@ using Conesoft_Website_Kontrol;
 using Conesoft_Website_Kontrol.Services;
 using Conesoft_Website_Kontrol.Tools;
 using Microsoft.Extensions.FileProviders;
-using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,13 +24,10 @@ builder.Services.AddUsers("Conesoft.Host.User", (Conesoft.Hosting.Host.GlobalSto
 
 builder.Services.AddTransient<User>();
 
-builder.Services.AddHeadElementHelper();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
 
 var app = builder.Build();
-
-app.UseHeadElementServerPrerendering();
 
 app.UseStaticFiles(new StaticFileOptions
 {

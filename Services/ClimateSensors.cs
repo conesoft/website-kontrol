@@ -35,17 +35,18 @@ namespace Conesoft_Website_Kontrol.Services
 
     class ClimateSensors
     {
-        required public Client Client { get; init; }
+        required public Client? Client { get; init; }
 
         private ClimateSensors() { }
 
         public static async Task<ClimateSensors> Connect(string clientId, string secret, string username, string password)
         {
             Console.WriteLine("Connecting to NetAtmo...");
-            return new ClimateSensors { Client = await NetatmoHelpers.Connect(clientId, secret, username, password) };
+            var client = await NetatmoHelpers.Connect(clientId, secret, username, password);
+            return new ClimateSensors { Client = client };
         }
 
-        public IAsyncEnumerable<Readout> GetReadouts() => Client.GetReadouts();
+        public IAsyncEnumerable<Readout> GetReadouts() => Client?.GetReadouts() ?? AsyncEnumerable.Empty<Readout>();
     }
 }
 
@@ -53,13 +54,20 @@ public record Readout(string Name, double Temperature, int? CO2, int Humidity);
 
 static class NetatmoHelpers
 {
-    public static async Task<Client> Connect(string clientId, string secret, string username, string password)
+    public static async Task<Client?> Connect(string clientId, string secret, string username, string password)
     {
-        var client = new Client(SystemClock.Instance, "https://api.netatmo.com/", clientId, secret);
+        try
+        {
+            var client = new Client(SystemClock.Instance, "https://api.netatmo.com/", clientId, secret);
 
-        await client.GenerateToken(username, password, new[] { Scope.HomecoachRead, Scope.PresenceRead, Scope.StationRead, Scope.ThermostatRead });
+            await client.GenerateToken(username, password, new[] { Scope.HomecoachRead, Scope.PresenceRead, Scope.StationRead, Scope.ThermostatRead });
 
-        return client;
+            return client;
+        }
+        catch (Exception)    
+        {
+            return null;
+        }
     }
 
     public static async IAsyncEnumerable<Readout> GetReadouts(this Client client)
