@@ -7,7 +7,7 @@
 
 <AuthorizeView Roles="CanSeeFinances">
     <Authorized>
-        <section>
+        <section centered thin>
             <h1>Finances</h1>
             <ul>
                 @foreach (var entry in Entries.OrderBy(e => e!.At))
@@ -32,7 +32,7 @@
             </ul>
         </section>
 
-        <section class="compensation">
+        <section centered thin class="compensation">
             @if (OpenAmount > 10)
             {
                 <h1>Open amount by Caleigh</h1>
@@ -49,7 +49,7 @@
             }
         </section>
 
-        <section>
+        <section centered thin>
             <h1>New entry</h1>
             <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
                 <fieldset horizontal>

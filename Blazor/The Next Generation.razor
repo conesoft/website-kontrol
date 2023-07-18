@@ -53,7 +53,7 @@
                 <img title="@name"
                      src="@url:thumbnail.jpg">
                 <video poster="@url:thumbnail.jpg"
-                       preload="metadata"
+                       preload=@(i > 1 ? "none" : "metadata")
                        controls
                        isplaying="@(isPlaying.TryGetValue(filename, out var isplaying) == true ? isplaying : false)"
                 @onplaying="() => isPlaying[filename] = true"
