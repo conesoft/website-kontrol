@@ -5,4 +5,16 @@
 @{
     Layout = "_Layout";
 }
-<component type="typeof(App)" render-mode="Server" />
+<!DOCTYPE html>
+<html lang="en">
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8">
+    <base href="~/">
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+    <script src="_framework/blazor.server.js"></script>
+    <div id="components-reconnect-modal" style="display:none;"></div>
+</body>
+</html>

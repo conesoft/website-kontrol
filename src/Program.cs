@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
 
+
 var phc = configuration.GetSection<PhilipsHueConfiguration>();
 var nac = configuration.GetSection<NetAtmoConfiguration>();
 
@@ -19,6 +20,8 @@ await builder.Services.AddPeriodicWrapped(
     generator: async () => await ClimateSensors.Connect(nac.ClientId, nac.Secret, nac.Username, nac.Password),
     every: TimeSpan.FromHours(2)
 );
+
+builder.Services.AddHttpClient();
 
 builder.Services.AddUsers("Conesoft.Host.User", (Conesoft.Hosting.Host.GlobalStorage / "Users").Path);
 

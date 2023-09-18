@@ -1,32 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
+@using Conesoft.Blazor.Components
 @namespace Conesoft_Website_Kontrol.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-<!DOCTYPE html>
-<html lang="en">
-<head prefix="og: http://ogp.me/ns#">
-    <meta charset="utf-8">
-
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-    <link rel="manifest" href="/icons/site.webmanifest">
-    <link rel="shortcut icon" href="/icons/favicon.ico">
-    <meta name="apple-mobile-web-app-title" content="Kontrol">
-    <meta name="application-name" content="Kontrol">
-    <meta name="theme-color" content="#000000">
-
-    <meta name="viewport" content="width=device-width">
-    <meta name="view-transition" content="same-origin" />
-    <base href="~/">
-    <link rel="stylesheet" type="text/css" href="https://cdn.conesoft.net/style.min.css?v=3a7133a4c07ea3cbe32342529a7d157e">
-    <link href="Conesoft - Website - Kontrol.styles.css" rel="stylesheet" />
-
-    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
-</head>
-<body>
-    @RenderBody()
-    <script src="_framework/blazor.server.js"></script>
-    <div id="components-reconnect-modal" style="display:none;"></div>
-</body>
-</html>
+@RenderBody()

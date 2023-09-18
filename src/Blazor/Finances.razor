@@ -1,93 +1,125 @@
 ﻿@page "/finances"
 
+@using Humanizer
 @using Conesoft.Files
-@using Conesoft_Website_Kontrol.Tools;
+@using Conesoft_Website_Kontrol.Tools
 
 <PageTitle>Finances Kontrol</PageTitle>
 
 <AuthorizeView Roles="CanSeeFinances">
     <Authorized>
-        <section centered thin>
-            <h1>Finances</h1>
-            <ul>
-                @foreach (var entry in Entries.OrderBy(e => e!.At))
+        <section id="layout">
+            <section id="list">
+                <div>
+                    @{
+                        var years = Entries.GroupBy(e => e.At.Year).OrderBy(e => e.Key).ToArray();
+                    }
+                    @foreach (var year in years)
+                    {
+                        <details open="@(year == years.Last())">
+                            <summary>@year.Key</summary>
+                            @{
+                                var months = year.GroupBy(e => e.At.Month).OrderBy(e => e.Key).ToArray();
+                            }
+                            <ul class="months">
+                                @foreach (var month in months)
+                                {
+                                    <li>
+                                        <details open="@(month == months.Last())">
+                                            <summary>
+                                                @System.Globalization.CultureInfo.GetCultureInfo("en-CA").DateTimeFormat.GetMonthName(month.Key)
+                                            </summary>
+
+                                            <ul class="entries">
+                                                @foreach (var entry in month.OrderBy(e => e!.At))
+                                                {
+                                                    <li class="@entry.Type.ToString().ToLower()">
+                                                        <p class="label">@entry.Description</p>
+                                                        <i class="date">@entry.At.ToLongDateString()</i>
+                                                        @if (entry.For != null)
+                                                        {
+                                                            <i class="who">for @entry.For</i>
+                                                        }
+                                                        @if (entry.By != null && entry.To != null)
+                                                        {
+                                                            <i id="who">
+                                                                by
+                                                                <span>@entry.By</span>
+                                                                to
+                                                                <span>@entry.To</span>
+                                                            </i>
+                                                        }
+                                                        <b class="value">@entry.Amount CHF</b>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </details>
+                                    </li>
+                                }
+                            </ul>
+                        </details>
+                    }
+                </div>
+            </section>
+
+            <section id="compensation" class="compensation">
+                @if (OpenAmount > 10)
                 {
-                    <li class="@entry.Type.ToString().ToLower()">
-                        <p>@entry.Description</p>
-                        <i>@entry.At.ToLongDateString()</i>
-                        @if (entry.For != null)
-                        {
-                            <i style="color: white">for @entry.For</i>
-                        }
-                        @if (entry.By != null && entry.To != null)
-                        {
-                            <i>by</i>
-                            <i style="color: white">@entry.By</i>
-                            <i> to </i>
-                            <i style="color: white">@entry.To</i>
-                        }
-                        <b>@entry.Amount CHF</b>
-                    </li>
+                    <h1>Open amount by Caleigh</h1>
+                    <b style="font-size: 2em">@OpenAmount.ToString("0.00") CHF</b>
                 }
-            </ul>
-        </section>
+                else if (OpenAmount < -10)
+                {
+                    <h1>Prepaid amount by Caleigh</h1>
+                    <b style="font-size: 2em">@((-OpenAmount).ToString("0.00")) CHF</b>
+                }
+                else
+                {
+                    <h1>No open Amount by Caleigh</h1>
+                }
+            </section>
 
-        <section centered thin class="compensation">
-            @if (OpenAmount > 10)
-            {
-                <h1>Open amount by Caleigh</h1>
-                <b style="font-size: 2em">@OpenAmount.ToString("0.00") CHF</b>
-            }
-            else if (OpenAmount < -10)
-            {
-                <h1>Prepaid amount by Caleigh</h1>
-                <b style="font-size: 2em">@((-OpenAmount).ToString("0.00")) CHF</b>
-            }
-            else
-            {
-                <h1>No open Amount by Caleigh</h1>
-            }
-        </section>
-
-        <section centered thin>
-            <h1>New entry</h1>
-            <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
-                <fieldset horizontal>
-                    <legend>entry type</legend>
-                    <InputRadioGroup @bind-Value="New.Type">
-                        <label><InputRadio Value="EntryType.Bill" />Bill</label>
-                        <label><InputRadio Value="EntryType.Income" />Income</label>
-                        <label><InputRadio Value="EntryType.Compensation" />Compensation</label>
-                    </InputRadioGroup>
-                </fieldset>
-                <fieldset>
-                    <legend>date of receipt</legend>
-                    <InputDate @bind-Value="New.At" />
+            <section id="form">
+                <h1>New Entry</h1>
+                <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
                     <fieldset horizontal>
-                        <InputRadioGroup @bind-Value="New.Every">
-                            <label><InputRadio Value="RepetitionType.NoRepetition" />no repetition</label>
-                            <label><InputRadio Value="RepetitionType.Month" />every month</label>
+                        <legend>entry type</legend>
+                        <InputRadioGroup @bind-Value="New.Type">
+                            <label><InputRadio Value="EntryType.Bill" />Bill</label>
+                            <label><InputRadio Value="EntryType.Income" />Income</label>
+                            <label><InputRadio Value="EntryType.Compensation" />Compensation</label>
                         </InputRadioGroup>
                     </fieldset>
-                </fieldset>
-                <fieldset horizontal>
-                    <legend>description</legend>
-                    <InputText @bind-Value="New.Description" />
-                </fieldset>
-                <fieldset horizontal>
-                    <legend>amount (in chf)</legend>
-                    <InputNumber style="font-size: 2em" @bind-Value="New.Amount" />
-                </fieldset>
-                <fieldset horizontal>
-                    <legend>money received by</legend>
-                    <InputRadioGroup @bind-Value="New.For">
-                        <label><InputRadio Value="@("davepermen")" />Davepermen</label>
-                        <label><InputRadio Value="@("caleighc")" />CaleighC</label>
-                    </InputRadioGroup>
-                </fieldset>
-                <input type="submit" value="add new entry">
-            </EditForm>
+                    <fieldset>
+                        <legend>date of receipt</legend>
+                        <InputDate @bind-Value="New.At" />
+                        <fieldset horizontal>
+                            <InputRadioGroup @bind-Value="New.Every">
+                                <label><InputRadio Value="RepetitionType.NoRepetition" />no repetition</label>
+                                <label><InputRadio Value="RepetitionType.Month" />every month</label>
+                            </InputRadioGroup>
+                        </fieldset>
+                    </fieldset>
+                    <fieldset horizontal>
+                        <legend>description</legend>
+                        <InputText @bind-Value="New.Description" />
+                    </fieldset>
+                    <fieldset horizontal>
+                        <legend>amount (in chf)</legend>
+                        <InputNumber style="font-size: 2em" @bind-Value="New.Amount" />
+                    </fieldset>
+                    <fieldset horizontal>
+                        <legend>money received by</legend>
+                        <InputRadioGroup @bind-Value="New.For">
+                            <label><InputRadio Value="@("davepermen")" />Davepermen</label>
+                            <label><InputRadio Value="@("caleighc")" />CaleighC</label>
+                        </InputRadioGroup>
+                    </fieldset>
+                    <input type="submit" value="add new entry">
+                </EditForm>
+            </section>
         </section>
+
     </Authorized>
     <NotAuthorized>
         <section>
