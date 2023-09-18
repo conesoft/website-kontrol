@@ -4,21 +4,49 @@
 
 section#layout {
     display: grid;
-    grid-template:
-        "form list" 1fr
-        "form compensation" auto
-        / 1fr 2fr;
-    display: grid;
-    overflow: hidden;
-    height: 100%;
+    gap: 1rem;
 }
 
-section#list {
-    grid-area: list;
-    overflow: auto;
-    display: flex;
-    flex-direction: column-reverse;
+@media (aspect-ratio < 1) {
+    section#layout {
+        grid-template:
+            "list" auto
+            "form" auto
+            "compensation" auto
+            / 1fr;
+        overflow: auto;
+        margin: 0;
+        margin-bottom: 4rem;
+    }
+
+    section#compensation {
+        margin: 1rem;
+    }
 }
+
+@media (aspect-ratio >= 1) {
+    section#layout {
+        display: grid;
+        grid-template:
+            "form list" 1fr
+            "form compensation" auto
+            / 1fr 2fr;
+        overflow: hidden;
+        margin: 1rem;
+    }
+
+    section#list {
+        grid-area: list;
+        overflow: auto;
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    section#compensation {
+        margin: 0 1rem;
+    }
+}
+
 
 section#compensation {
     grid-area: compensation;
@@ -32,15 +60,16 @@ section#form {
 details[open] {
     background: black;
     padding-top: 1rem;
+    display: grid;
 }
 
-details[open] > summary {
-    font-weight: 900;
-    background: #333;
-    padding-inline: 1rem;
-    border-radius: 1rem 1rem 0 0;
-    width: min-content;
-}
+    details[open] > summary {
+        font-weight: 900;
+        background: #333;
+        padding-inline: 1rem;
+        border-radius: 1rem 1rem 0 0;
+        width: min-content;
+    }
 
 details:not([open]) {
     display: inline;
@@ -51,18 +80,19 @@ details:not([open]) {
     border-radius: 1000px;
 }
 
-details:not([open]) > summary {
+    details:not([open]) > summary {
+    }
+
+summary {
+    line-height: 2rem;
+    list-style: none;
+    text-align: center;
 }
 
-    summary {
-        line-height: 2rem;
-        list-style: none;
-        text-align: center;
-    }
-
-    .months {
-        background: #111;
-    }
+.months {
+    background: #111;
+    display: inline-block;
+}
 
     .months > li {
         display: inline;

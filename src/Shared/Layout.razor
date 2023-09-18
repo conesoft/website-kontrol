@@ -3,7 +3,7 @@
 
 <PageTitle>Kontrol</PageTitle>
 <HeadContent>
-    <HtmlHead/>
+    <HtmlHead />
 
     <meta name="description" content="Kontrol by Conesoft" />
     <meta property="og:type" content="website" />
@@ -13,19 +13,22 @@
 </HeadContent>
 
 <header>
-    <h1>
-        <NavLink href="" Match="NavLinkMatch.All">Kontrol</NavLink>
-        <nav style="gap: 0.5rem">
-            <NavLink href="car">car</NavLink>
-            <NavLink href="home">home</NavLink>
-            <NavLink href="finances">finances</NavLink>
-            <NavLink href="content">content</NavLink>
-        </nav>
-    </h1>
+    <nav>
+        <h1>
+            <NavLink href="" Match="NavLinkMatch.All">⌂</NavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink href="car">car</NavLink>
+                    <NavLink href="home">home</NavLink>
+                    <NavLink href="finances">finances</NavLink>
+                    <NavLink href="content">content</NavLink>
+                </Authorized>
+            </AuthorizeView>
+        </h1>
+    </nav>
 </header>
-<main>
-    @Body
-</main>
+<UserLogin />
+@Body
 <footer>
     <p>&copy; 2023</p>
     <p>written by <a href="https://davepermen.net">davepermen</a></p>
