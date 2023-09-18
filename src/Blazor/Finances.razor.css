@@ -5,8 +5,8 @@
 section#layout {
     display: grid;
     grid-template:
-        "form list"
-        "form compensation"
+        "form list" 1fr
+        "form compensation" auto
         / 1fr 2fr;
     display: grid;
     overflow: hidden;
@@ -22,6 +22,7 @@ section#list {
 
 section#compensation {
     grid-area: compensation;
+    place-self: end;
 }
 
 section#form {
