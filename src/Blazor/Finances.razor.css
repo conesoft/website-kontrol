@@ -5,6 +5,7 @@
 section#layout {
     display: grid;
     gap: 1rem;
+    contain: strict;
 }
 
 @media (aspect-ratio < 1) {

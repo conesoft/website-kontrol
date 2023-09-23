@@ -25,12 +25,12 @@
 {
     <h1>Season @i</h1>
     <section>
-        @foreach (var file in Directory.GetFiles(showpath + @"\Season " + i))
+        @foreach (var file in IO.Directory.GetFiles(showpath + @"\Season " + i))
         {
-            var filenametofix = Path.GetFileName(file);
+            var filenametofix = IO.Path.GetFileName(file);
             filenametofix = filenametofix.Replace("%", "%25");
             var filename = $"Season {i}/{filenametofix}";
-            var name = HttpUtility.UrlDecode(string.Join(' ', Path.GetFileNameWithoutExtension(file).Split(' ').Skip(1)).Trim());
+            var name = HttpUtility.UrlDecode(string.Join(' ', IO.Path.GetFileNameWithoutExtension(file).Split(' ').Skip(1)).Trim());
 
             var url = baseurl + filename;
 

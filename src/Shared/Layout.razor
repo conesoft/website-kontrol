@@ -12,22 +12,13 @@
     <meta property="og:image" content="/meta-image.jpg" />
 </HeadContent>
 
-<header>
-    <nav>
-        <h1>
-            <NavLink href="" Match="NavLinkMatch.All">⌂</NavLink>
-            <AuthorizeView>
-                <Authorized>
-                    <NavLink href="car">car</NavLink>
-                    <NavLink href="home">home</NavLink>
-                    <NavLink href="finances">finances</NavLink>
-                    <NavLink href="content">content</NavLink>
-                </Authorized>
-            </AuthorizeView>
-        </h1>
-    </nav>
-</header>
-<UserLogin />
+<UserHeaderNav>
+    <NavLink href="" Match="NavLinkMatch.All">⌂</NavLink>
+    <NavLink href="car">car</NavLink>
+    <NavLink href="home">home</NavLink>
+    <NavLink href="finances">finances</NavLink>
+    <NavLink href="content">content</NavLink>
+</UserHeaderNav>
 @Body
 <footer>
     <p>&copy; 2023</p>
