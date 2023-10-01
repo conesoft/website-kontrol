@@ -1,23 +1,21 @@
-﻿li {
-    border-radius: 1rem;
-    margin-bottom: 1rem;
-    padding: 0;
+﻿section {
+    display: grid;
     grid-template:
-        ". image . . ." 1rem
-        ". image . title ." auto
-        ". image . link ." auto
-        ". image . description ." 1fr
-        ". image . . ." 1rem
-        / 0 10rem 1rem auto 1rem
+        "image .           ." 0
+        "image title       ." auto
+        "image link        ." auto
+        "image description ." 1fr
+        "image .           ." 0
+        / 10rem auto 0
 }
 
-    li h2 {
+    section h2 {
         grid-area: title;
         font-weight: 900;
-        color: springgreen
+        color: var(--accent-color);
     }
 
-    li a {
+    section a {
         grid-area: link;
         padding: 0.5rem 0;
         white-space: nowrap;
@@ -25,7 +23,7 @@
         text-overflow: ellipsis;
     }
 
-    li img {
+    section img {
         grid-area: image;
         place-self: stretch;
         object-fit: cover;
@@ -33,7 +31,7 @@
         aspect-ratio: 1;
     }
 
-    li p {
+    section p {
         grid-area: description;
         overflow: hidden;
         text-overflow: ellipsis;

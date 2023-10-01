@@ -1,40 +1,60 @@
-﻿section[layout=home] ul li {
-    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
-    grid-gap: 0 1rem;
-    margin: 0;
-    min-height: calc(5rem + 2 * 1rem);
-    padding-block: 1rem;
+﻿main > section {
+    display: grid;
+    padding: 1rem;
+    grid-auto-flow: column;
 }
 
-section[layout=home] ul h2 {
+section.room {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+    grid-gap: 1rem;
+    grid-auto-rows: min-content;
+    grid-template-rows: 1fr;
+}
+
+h2 {
     grid-column: 1 / -1;
     height: 3rem;
     line-height: 3rem;
 }
 
-section[layout=home] button {
+button {
     margin: 0;
     padding: 0;
     position: initial;
     width: auto;
     aspect-ratio: 1 / 1;
-    border-radius: 3rem;
+    /*border-radius: 3rem;*/
 }
 
-    section[layout=home] button:disabled {
+    button:disabled {
         opacity: 0.3;
     }
 
-    section[layout=home] button.on {
+    button.on {
         opacity: 1;
-        box-shadow: 0 0 1rem lightyellow;
+        background: color-mix(in srgb, lightyellow 75%, black);
+        box-shadow: 0 0 1rem black, 0 0 1rem lightyellow;
+        color: black;
     }
 
-    section[layout=home] button.off {
+        button.on:hover {
+            filter: none;
+            background: white;
+            box-shadow: 0 0 1rem white;
+        }
+
+    button.off {
         opacity: 0.8;
     }
 
-    section[layout=home] button.wide {
+        button.off:hover {
+            filter: none;
+            background: color-mix(in srgb, lightyellow 25%, black);
+            box-shadow: 0 0 1rem black, 0 0 1rem lightyellow;
+        }
+
+    button.wide {
         grid-column: span 2;
         aspect-ratio: revert;
     }

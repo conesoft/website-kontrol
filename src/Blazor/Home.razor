@@ -9,12 +9,11 @@
 
 <PageTitle>Home Kontrol</PageTitle>
 
-<section layout="home">
-    <h1>Rooms</h1>
-    <ul>
+<main layout="home">
+    <section>
         @foreach (var room in rooms_)
         {
-            <li>
+            <section class="room">
                 @if (room.Rooms.FirstOrDefault() is Q42.HueApi.Models.Groups.Group room_ and not null)
                 {
                     var roomlights = room_.Lights.Select(l => lights.First(alllights => alllights.Id == l)).ToArray();
@@ -31,11 +30,14 @@
                         }
                     </button>
 
-                    @foreach (var light in roomlights)
+                    @if (roomlights.Count() > 1)
                     {
-                        var _offline = light.State.IsReachable == false;
-                        var _class = light.State.On ? "on" : "off";
-                        <button class="@_class" disabled="@_offline" @onclick="() => ToggleLight(light)">@light.Name</button>
+                        @foreach (var light in roomlights)
+                        {
+                            var _offline = light.State.IsReachable == false;
+                            var _class = light.State.On ? "on" : "off";
+                            <button class="@_class" disabled="@_offline" @onclick="() => ToggleLight(light)">@light.Name</button>
+                        }
                     }
                 }
                 @if (room.Sensors.FirstOrDefault() is Readout sensor and not null && room.Rooms.FirstOrDefault() == null)
@@ -44,10 +46,10 @@
                         @sensor.Name - @sensor.Temperature °C - @sensor.CO2 ppm - @sensor.Humidity %
                     </button>
                 }
-            </li>
+            </section>
         }
-    </ul>
-</section>
+    </section>
+</main>
 
 @code {
     IReadOnlyCollection<Q42.HueApi.Models.Groups.Group> rooms = Array.Empty<Q42.HueApi.Models.Groups.Group>();
@@ -68,7 +70,9 @@
 
         sensors = await climateSensors.GetReadouts().ToArrayAsync();
 
-        rooms_ = sensors.FullOuterGroupJoin(rooms, s => s.Name, r => r.Name, (s, r, name) => new Room(name, s, r));
+        rooms_ = sensors
+            .FullOuterGroupJoin(rooms, s => s.Name, r => r.Name, (s, r, name) => new Room(name, s, r))
+            .Where(r => r.Name.Contains("$") == false);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -84,7 +88,7 @@
 
     async Task ToggleLight(Light light)
     {
-        if(await user.IsInRole("CanEditLights"))
+        if (await user.IsInRole("CanEditLights"))
         {
             var command = light.State.On ? new LightCommand().TurnOff() : new LightCommand().TurnOn();
             await lightControls.Client.SendCommandAsync(command, new[] { light.Id });

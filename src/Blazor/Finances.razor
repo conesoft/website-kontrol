@@ -8,61 +8,63 @@
 
 <AuthorizeView Roles="CanSeeFinances">
     <Authorized>
-        <section id="layout">
+        <main id="layout">
             <section id="list">
-                <div>
-                    @{
-                        var years = Entries.GroupBy(e => e.At.Year).OrderBy(e => e.Key).ToArray();
-                    }
-                    @foreach (var year in years)
-                    {
-                        <details open="@(year == years.Last())">
-                            <summary>@year.Key</summary>
-                            @{
-                                var months = year.GroupBy(e => e.At.Month).OrderBy(e => e.Key).ToArray();
-                            }
-                            <ul class="months">
-                                @foreach (var month in months)
-                                {
-                                    <li>
-                                        <details open="@(month == months.Last())">
-                                            <summary>
-                                                @System.Globalization.CultureInfo.GetCultureInfo("en-CA").DateTimeFormat.GetMonthName(month.Key)
-                                            </summary>
-
-                                            <ul class="entries">
-                                                @foreach (var entry in month.OrderBy(e => e!.At))
-                                                {
-                                                    <li class="@entry.Type.ToString().ToLower()">
-                                                        <p class="label">@entry.Description</p>
-                                                        <i class="date">@entry.At.ToLongDateString()</i>
-                                                        @if (entry.For != null)
-                                                        {
-                                                            <i class="who">for @entry.For</i>
-                                                        }
-                                                        @if (entry.By != null && entry.To != null)
-                                                        {
-                                                            <i id="who">
-                                                                by
-                                                                <span>@entry.By</span>
-                                                                to
-                                                                <span>@entry.To</span>
-                                                            </i>
-                                                        }
-                                                        <b class="value">@entry.Amount CHF</b>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </details>
-                                    </li>
+                <div class="reverse">
+                    <div class="reversed">
+                        @{
+                            var years = Entries.GroupBy(e => e.At.Year).OrderBy(e => e.Key).ToArray();
+                        }
+                        @foreach (var year in years)
+                        {
+                            <details open="@(year == years.Last())">
+                                <summary>@year.Key</summary>
+                                @{
+                                    var months = year.GroupBy(e => e.At.Month).OrderBy(e => e.Key).ToArray();
                                 }
-                            </ul>
-                        </details>
-                    }
+                                <ul class="months">
+                                    @foreach (var month in months)
+                                    {
+                                        <li>
+                                            <details open="@(month == months.Last())">
+                                                <summary>
+                                                    @System.Globalization.CultureInfo.GetCultureInfo("en-CA").DateTimeFormat.GetMonthName(month.Key)
+                                                </summary>
+
+                                                <ul class="entries">
+                                                    @foreach (var entry in month.OrderBy(e => e!.At))
+                                                    {
+                                                        <li class="@entry.Type.ToString().ToLower()">
+                                                            <p class="label">@entry.Description</p>
+                                                            <i class="date">@entry.At.ToLongDateString()</i>
+                                                            @if (entry.For != null)
+                                                            {
+                                                                <i class="who">for @entry.For</i>
+                                                            }
+                                                            @if (entry.By != null && entry.To != null)
+                                                            {
+                                                                <i id="who" inline>
+                                                                    by
+                                                                    <span>@entry.By</span>
+                                                                    to
+                                                                    <span>@entry.To</span>
+                                                                </i>
+                                                            }
+                                                            <b class="value">@entry.Amount CHF</b>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </details>
+                                        </li>
+                                    }
+                                </ul>
+                            </details>
+                        }
+                    </div>
                 </div>
             </section>
 
-            <section id="compensation" class="compensation">
+            <section id="compensation" horizontal class="compensation">
                 @if (OpenAmount > 10)
                 {
                     <h1>Open amount by Caleigh</h1>
@@ -80,7 +82,6 @@
             </section>
 
             <section id="form">
-                <h1>New Entry</h1>
                 <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
                     <fieldset horizontal>
                         <legend>entry type</legend>
@@ -106,7 +107,7 @@
                     </fieldset>
                     <fieldset horizontal>
                         <legend>amount (in chf)</legend>
-                        <InputNumber style="font-size: 2em" @bind-Value="New.Amount" />
+                        <InputNumber class="main" @bind-Value="New.Amount" />
                     </fieldset>
                     <fieldset horizontal>
                         <legend>money received by</legend>
@@ -118,7 +119,7 @@
                     <input type="submit" value="add new entry">
                 </EditForm>
             </section>
-        </section>
+        </main>
 
     </Authorized>
     <NotAuthorized>
