@@ -1,0 +1,42 @@
+﻿<li class="@TypeName" horizontal>
+
+    <div class="type">
+    </div>
+
+    <section vertical>
+        <p class="label">@Entry.Description</p>
+        @if (Entry.For != null)
+        {
+            <i class="who">for @Entry.For</i>
+        }
+        @if (Entry.By != null && Entry.To != null)
+        {
+            <i class="who" inline>
+                by
+                <span>@Entry.By</span>
+                to
+                <span>@Entry.To</span>
+            </i>
+        }
+    </section>
+    
+    <section vertical>
+        <i class="date">@Entry.At.ToLongDateString()</i>
+        <b class="value">@Entry.Amount CHF</b>
+    </section>
+
+    <menu>
+        <button @onclick=@Delete>✕</button>
+    </menu>
+</li>
+
+@code {
+    [Parameter] public Entry Entry { get; set; }
+
+    public string TypeName => Entry.Type.ToString().ToLower();
+
+    public void Delete()
+    {
+        File.From(Entry.PathToFile).Delete();
+    }
+}

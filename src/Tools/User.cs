@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Security.Principal;
 
-namespace Conesoft_Website_Kontrol;
+namespace Conesoft_Website_Kontrol.Tools;
 public class User
 {
     private readonly AuthenticationStateProvider state;

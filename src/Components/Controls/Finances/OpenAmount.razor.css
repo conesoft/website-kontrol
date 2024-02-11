@@ -1,0 +1,14 @@
+section {
+    display: grid;
+    place-items: center stretch;
+}
+
+    section *:last-child {
+        place-self: center end;
+    }
+
+
+    b {
+        color: var(--entry-color);
+        padding-inline-end: 1rem;
+    }

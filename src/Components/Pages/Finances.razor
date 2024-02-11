@@ -1,0 +1,51 @@
+﻿@page "/finances"
+
+@using Conesoft_Website_Kontrol.Components.Controls.Finances
+@using Humanizer
+@using Conesoft.Files
+@using Conesoft.Tools
+
+@rendermode InteractiveServer
+
+<PageTitle>Finances Kontrol</PageTitle>
+
+<main>
+    <AuthorizeView Roles="CanSeeFinances">
+        <Authorized>
+            <List id="list" Entries="@Entries" />
+            <OpenAmount id="compensation" Entries="@Entries" />
+            <AddNewEntry id="form" />
+        </Authorized>
+    </AuthorizeView>
+</main>
+
+@code {
+    List<Entry> Entries { get; set; } = new();
+
+    Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.LocalStorage / "Finances";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var _ = InvokeAsync(async () =>
+        {
+            await foreach (var changes in Storage.Live().Changes())
+            {
+                if (changes.ThereAreChanges || changes.FirstRun)
+                {
+                    Entries = (await Task.WhenAll(changes.All.Where(f => f.Extension == ".json").Select(async f =>
+                    {
+                        var entry = await f.WhenReady.ReadFromJson<Entry>();
+                        if(entry != null)
+                        {
+                            entry.PathToFile = f.Path;
+                        }
+                        return entry;
+                    }))).NotNull().ToList();
+                    StateHasChanged();
+                }
+            }
+        });
+    }
+}

@@ -1,0 +1,41 @@
+﻿@rendermode InteractiveServer
+
+<section @attributes="@InputAttributes" horizontal class="compensation">
+    @if (Amount > 10)
+    {
+        <h1>Open amount by Caleigh</h1>
+        <b style="font-size: 2em">@Amount.ToString("0.00") CHF</b>
+    }
+    else if (Amount < -10)
+    {
+        <h1>Prepaid amount by Caleigh</h1>
+        <b style="font-size: 2em">@((-Amount).ToString("0.00")) CHF</b>
+    }
+    else
+    {
+        <h1>No open Amount by Caleigh</h1>
+    }
+</section>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; } = new();
+
+    [Parameter] public List<Entry> Entries { get; set; } = new();
+
+    decimal Amount = 0;
+
+    protected override void OnParametersSet()
+    {
+        if (Entries.Any())
+        {
+            // SUMME([Bill Amount])*SUMME([Salary Caleigh])/ (SUMME([Salary Dave]) + SUMME([Salary Caleigh]))-SUMME([Transferred by Caleigh])
+            var AllBills = Entries.Where(e => e.Type == Entry.EntryType.Bill).Sum(e => e.Amount);
+            var SalaryCaleigh = Entries.Where(e => e.Type == Entry.EntryType.Income && e.For == "caleighc").Sum(e => e.Amount);
+            var SalaryDave = Entries.Where(e => e.Type == Entry.EntryType.Income && e.For == "davepermen").Sum(e => e.Amount);
+            var TransferredByCaleigh = Entries.Where(e => e.Type == Entry.EntryType.Compensation && e.By == "caleighc" && e.To == "davepermen").Sum(e => e.Amount);
+
+            Amount = AllBills * SalaryCaleigh / (SalaryDave + SalaryCaleigh) - TransferredByCaleigh;
+        }
+    }
+}

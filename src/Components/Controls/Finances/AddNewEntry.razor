@@ -1,0 +1,78 @@
+﻿<section @attributes="@InputAttributes">
+    <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
+    <fieldset horizontal>
+        <legend>entry type</legend>
+        <InputRadioGroup @bind-Value="New.Type">
+            <label><InputRadio Value="Entry.EntryType.Bill" />Bill</label>
+            <label><InputRadio Value="Entry.EntryType.Income" />Income</label>
+            <label><InputRadio Value="Entry.EntryType.Compensation" />Compensation</label>
+        </InputRadioGroup>
+    </fieldset>
+    <fieldset>
+        <legend>date of receipt</legend>
+        <InputDate @bind-Value="New.At" />
+        <fieldset horizontal>
+            <InputRadioGroup @bind-Value="New.Every">
+                <label><InputRadio Value="Entry.RepetitionType.NoRepetition" />no repetition</label>
+                <label><InputRadio Value="Entry.RepetitionType.Month" />every month</label>
+            </InputRadioGroup>
+        </fieldset>
+    </fieldset>
+    <fieldset horizontal>
+        <legend>description</legend>
+        <InputText @bind-Value="New.Description" />
+    </fieldset>
+    <fieldset horizontal>
+        <legend>amount (in chf)</legend>
+        <InputNumber class="main" @bind-Value="New.Amount" />
+    </fieldset>
+    <fieldset horizontal>
+        <legend>money received by</legend>
+        <InputRadioGroup @bind-Value="New.For">
+            <label><InputRadio Value="@("davepermen")" />Davepermen</label>
+            <label><InputRadio Value="@("caleighc")" />CaleighC</label>
+        </InputRadioGroup>
+    </fieldset>
+    <input type="submit" value="add new entry">
+    </EditForm>
+</section>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; } = new();
+
+    Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.LocalStorage / "Finances";
+
+    record EditableEntry()
+    {
+        public Entry.EntryType Type { get; set; } = Entry.EntryType.Invalid;
+        public DateTime At { get; set; } = DateTime.Today;
+        public string Description { get; set; } = "";
+        public decimal Amount { get; set; } = 0;
+        public Entry.RepetitionType Every { get; set; } = Entry.RepetitionType.NoRepetition;
+        public string For { get; set; } = "";
+    }
+
+    EditableEntry New = new();
+
+    protected async Task AddEntry()
+    {
+        var every = New.Type == Entry.EntryType.Bill ? New.Every : Entry.RepetitionType.NoRepetition;
+        var for_ = New.Type == Entry.EntryType.Income ? New.For : null;
+        var by = New.Type == Entry.EntryType.Compensation ? "caleighc" : null;
+        var to = New.Type == Entry.EntryType.Compensation ? "davepermen" : null;
+
+        var entry = new Entry(Type: New.Type, At: New.At, Description: New.Description, Amount: New.Amount, Every: every, For: for_, By: by, To: to);
+
+        var name = entry.Type.ToString() + " " + entry.Description + " " + entry.At.ToString("yyyy-MM-dd");
+        var file = File.From("");
+        var i = 0;
+        do
+        {
+            file = Storage / Filename.From(name + (i > 0 ? $" ({i})" : ""), "json");
+            i++;
+        } while (file.Exists);
+
+        await file.WriteAsJson(entry);
+    }
+}

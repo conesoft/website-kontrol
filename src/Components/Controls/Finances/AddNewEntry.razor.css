@@ -1,0 +1,23 @@
+section {
+    padding: 1rem;
+}
+
+::deep input[type=radio] {
+    display: none;
+}
+
+::deep form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+    ::deep form > *:last-child {
+        flex-grow: 1;
+        margin-top: 1rem;
+    }
+
+::deep input.main {
+    width: 100%;
+    font-size: 4rem;
+}

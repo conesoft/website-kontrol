@@ -1,0 +1,57 @@
+﻿main {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (aspect-ratio < 1) {
+    main {
+        grid-template:
+            "list" auto
+            "form" auto
+            "compensation" auto
+            / 1fr;
+        overflow: auto;
+        margin: 0;
+        margin-bottom: 4rem;
+    }
+}
+
+@media (aspect-ratio >= 1) {
+    main {
+        display: grid;
+        grid-template:
+            "form list" 1fr
+            "form compensation" auto
+            / 1fr 2fr;
+        overflow: hidden;
+        contain: strict;
+        /*margin: 1rem;*/
+    }
+}
+
+    ::deep section#list {
+        grid-area: list;
+    }
+
+    ::deep section#compensation {
+        grid-area: compensation;
+    }
+
+    ::deep section#form {
+        grid-area: form;
+    }
+
+::deep .bill {
+    --entry-color: darkred;
+    --entry-mask: url('/content/finances/bill.svg');
+}
+
+::deep .income {
+    --entry-color: darkgoldenrod;
+    --entry-mask: url('/content/finances/income.svg');
+}
+
+::deep .compensation {
+    --entry-color: cornflowerblue;
+    --entry-mask: url('/content/finances/compensation.svg');
+}

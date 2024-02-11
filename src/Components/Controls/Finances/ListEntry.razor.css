@@ -1,0 +1,53 @@
+li {
+    grid-template-columns: 3rem 1fr auto auto;
+    line-height: 1rem;
+}
+
+li > section {
+    padding: 0.5rem;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.date {
+    opacity: 0.7;
+}
+
+.who {
+    font-weight: 100;
+    opacity: 0.9;
+}
+
+.value {
+    font-weight: 500;
+    place-self: end;
+}
+
+img {
+    max-width: 100%;
+    place-self: center;
+}
+
+b {
+    color: var(--entry-color);
+}
+
+div {
+    background-color: var(--entry-color);
+    mask-image: var(--entry-mask);
+    mask-size: cover;
+    aspect-ratio: 1;
+    width: 2rem;
+    place-self: center;
+}
+
+menu {
+}
+
+button {
+    width: 3rem;
+    aspect-ratio: 1;
+    --button-color: var(--danger-color);
+}

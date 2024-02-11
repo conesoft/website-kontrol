@@ -1,0 +1,39 @@
+﻿<section @attributes="@InputAttributes">
+    <div class="reverse">
+        <div class="reversed">
+            @{
+                var years = Entries.GroupBy(e => e.At.Year).OrderBy(e => e.Key).ToArray();
+            }
+            @foreach (var year in years)
+            {
+                <details open="@(year == years.Last())">
+                    <summary>@year.Key</summary>
+                    @{
+                        var months = year.GroupBy(e => e.At.Month).OrderBy(e => e.Key).ToArray();
+                    }
+                    <ul class="months">
+                        @foreach (var month in months)
+                        {
+                            <li>
+                                <details open="@(month == months.Last())">
+                                    <summary>
+                                        @System.Globalization.CultureInfo.GetCultureInfo("en-CA").DateTimeFormat.GetMonthName(month.Key)
+                                    </summary>
+
+                                    <ListEntries Entries="@month.OrderBy(e => e!.At)" />
+                                </details>
+                            </li>
+                        }
+                    </ul>
+                </details>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; } = new();
+
+    [Parameter] public List<Entry> Entries { get; set; } = new();
+}

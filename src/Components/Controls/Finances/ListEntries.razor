@@ -1,0 +1,10 @@
+﻿<ul>
+    @foreach (var entry in Entries)
+    {
+        <ListEntry Entry="@entry" />
+    }
+</ul>
+
+@code {
+    [Parameter] public IEnumerable<Entry> Entries { get; set; } = [];
+}

@@ -1,51 +1,46 @@
 ﻿using Conesoft.Hosting;
 using Conesoft.Users;
-using Conesoft_Website_Kontrol;
+using Conesoft_Website_Kontrol.Components;
 using Conesoft_Website_Kontrol.Services;
 using Conesoft_Website_Kontrol.Tools;
 using Microsoft.Extensions.FileProviders;
 
-var builder = WebApplication.CreateBuilder(args);
-
 var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
 
-
-var phc = configuration.GetSection<PhilipsHueConfiguration>();
 var nac = configuration.GetSection<NetAtmoConfiguration>();
 
-builder.Services.AddSingleton<NetworkScanner>();
-builder.Services.AddSingleton(await LightControls.ConnectToBridge(phc.AppKey));
+var builder = WebApplication.CreateBuilder(args);
 
-await builder.Services.AddPeriodicWrapped(
-    generator: async () => await ClimateSensors.Connect(nac.ClientId, nac.Secret, nac.Username, nac.Password),
-    every: TimeSpan.FromHours(2)
-);
+//await builder.Services.AddPeriodicWrapped(
+//    generator: async () => await ClimateSensors.Connect(nac.ClientId, nac.Secret, nac.Username, nac.Password),
+//    every: TimeSpan.FromHours(2)
+//);
 
-builder.Services.AddHttpClient();
-
-builder.Services.AddUsers("Conesoft.Host.User", (Conesoft.Hosting.Host.GlobalStorage / "Users").Path);
-
-builder.Services.AddTransient<User>();
-
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
+builder.Services
+    .AddSingleton<NetworkScanner>()
+    //.AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
+    .AddHttpClient()
+    .AddUsersWithStorage()
+    .AddTransient<User>()
+    .AddCascadingAuthenticationState()
+    .AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    RequestPath = "/content/feeds/thumbnail",
-    FileProvider = new PhysicalFileProvider((Conesoft.Hosting.Host.GlobalStorage / "FromSources" / "Feeds" / "Entries").Path)
-});
+app
+    .UseStaticFiles(new StaticFileOptions
+    {
+        RequestPath = "/content/feeds/thumbnail",
+        FileProvider = new PhysicalFileProvider((Conesoft.Hosting.Host.GlobalStorage / "FromSources" / "Feeds" / "Entries").Path)
+    })
+    .UseDeveloperExceptionPage()
+    .UseHostingDefaults(useDefaultFiles: true, useStaticFiles: true)
+    .UseRouting() // fixes routes for Scoped CSS as well as static files
+    .UseStaticFiles()
+    .UseAntiforgery();
 
-app.UseDeveloperExceptionPage();
-app.UseHostingDefaults(useDefaultFiles: true, useStaticFiles: true);
-app.UseStaticFiles();
-app.UseRouting();
 app.MapUsers();
-app.MapBlazorHub();
-app.MapRazorPages();
-app.MapFallbackToPage("/_Host");
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();
 
