@@ -1,10 +1,11 @@
 section {
     display: grid;
-    place-items: center stretch;
+    place-items: stretch;
+    line-height: 3rem;
 }
 
     section *:last-child {
-        place-self: center end;
+        text-align: end;
     }
 
 

@@ -3,11 +3,12 @@
 @using System.Diagnostics
 @using System.Text.RegularExpressions
 @using System.Net
+@using Conesoft_Website_Kontrol.Tools
 
 <PageTitle>Content Kontrol</PageTitle>
 
 <main>
-    @foreach (var entry in Entries)
+    @foreach (var entry in Entries.Take(50))
     {
         <section>
             <h2>@WebUtility.HtmlDecode(entry.Name)</h2>
@@ -16,7 +17,7 @@
             {
                 <img src="/content/feeds/thumbnail/@entry.ImageFilename">
             }
-            <p>@WebUtility.HtmlDecode(Regex.Replace(entry.Description, "<.*?>", string.Empty))</p>
+            <p>@FastEntryDecoder.DecodeDescription(entry)</p>
         </section>
     }
 </main>
@@ -36,18 +37,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var loadedEntries = await Storage.Filtered("*.json", allDirectories: false).ReadFromJson<Entry>();
+        var loadedEntries = await Storage.Filtered("*.json", allDirectories: false).Where(f => f.Info.CreationTime > DateTime.Today.AddDays(-1)).ReadFromJson<Entry>();
         var entries = loadedEntries.NotNull().Select(e => e.Content).OrderByDescending(e => e.Published);
-        // var entries = (await Task.WhenAll(Storage
-        //     .Filtered("*.json", allDirectories: false)
-        //     .Select(async f => await f.ReadFromJson<Entry>())
-        // )).NotNull().OrderByDescending(e => e.Published).ToArray();
-
-        foreach (var chunk in entries.Take(50).Chunk(15))
-        {
-            Entries.AddRange(chunk);
-            StateHasChanged();
-            await Task.Yield();
-        }
+        Entries = entries.ToList();
     }
 }

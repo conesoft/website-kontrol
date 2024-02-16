@@ -4,6 +4,7 @@ using Conesoft_Website_Kontrol.Components;
 using Conesoft_Website_Kontrol.Services;
 using Conesoft_Website_Kontrol.Tools;
 using Microsoft.Extensions.FileProviders;
+using System.Text.RegularExpressions;
 
 var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
 
@@ -44,9 +45,6 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();
 
-
-
-
 record PhilipsHueConfiguration(string AppKey) : TypedConfigurationHelper.ISection
 {
     public static string SectionName => "philips-hue";
@@ -56,3 +54,4 @@ record NetAtmoConfiguration(string ClientId, string Secret, string Username, str
 {
     public static string SectionName => "netatmo";
 }
+

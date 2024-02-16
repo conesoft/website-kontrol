@@ -1,7 +1,3 @@
-section {
-    padding: 1rem;
-}
-
 ::deep input[type=radio] {
     display: none;
 }
@@ -10,6 +6,7 @@ section {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 1rem;
 }
 
     ::deep form > *:last-child {
