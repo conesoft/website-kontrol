@@ -19,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddSingleton<NetworkScanner>()
-    //.AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
+    .AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
     .AddHttpClient()
     .AddUsersWithStorage()
     .AddTransient<User>()
