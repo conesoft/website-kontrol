@@ -1,4 +1,4 @@
-﻿main > section {
+﻿main > section:first-of-type {
     display: grid;
     padding: 1rem;
     grid-auto-flow: column;
@@ -6,9 +6,13 @@
     height: auto;
 }
 
-main section {
-    background: none;
+main {
+    grid-template-rows: auto;
 }
+
+    main > section:first-of-type section {
+        background: none;
+    }
 
 section.room {
     display: grid;
@@ -39,7 +43,7 @@ button {
 
     button.on {
         opacity: 1;
-        background: color-mix(in srgb, lightyellow 75%, black);
+        background: color-mix(in srgb, lightyellow calc(var(--brightness) * 100%), color-mix(in srgb, lightyellow 25%, black));
         box-shadow: 0 0 1rem black, 0 0 1rem lightyellow;
         color: black;
     }
@@ -64,3 +68,23 @@ button {
         grid-column: span 2;
         aspect-ratio: revert;
     }
+
+
+section:has(input:disabled) {
+    opacity: 0.5;
+}
+
+input:disabled {
+    opacity: 0;
+}
+
+::deep #services-3rdparty button {
+    display: flex;
+    gap: 1ch;
+}
+
+li {
+    all: unset;
+    font-weight: 200;
+    opacity: 0.4;
+}

@@ -1,10 +1,12 @@
 ﻿using Conesoft.Hosting;
 using Conesoft.Users;
+using Conesoft.Blazor.NetatmoAuth;
 using Conesoft_Website_Kontrol.Components;
 using Conesoft_Website_Kontrol.Services;
 using Conesoft_Website_Kontrol.Tools;
 using Microsoft.Extensions.FileProviders;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
 
@@ -12,12 +14,11 @@ var nac = configuration.GetSection<NetAtmoConfiguration>();
 
 var builder = WebApplication.CreateBuilder(args);
 
-//await builder.Services.AddPeriodicWrapped(
-//    generator: async () => await ClimateSensors.Connect(nac.ClientId, nac.Secret, nac.Username, nac.Password),
-//    every: TimeSpan.FromHours(2)
-//);
+builder.Services.AddSingleton(nac!);
+builder.Services.AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"));
 
 builder.Services
+    .AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - {name}.json")
     .AddSingleton<NetworkScanner>()
     .AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
     .AddHttpClient()

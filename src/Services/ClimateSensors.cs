@@ -1,75 +1,86 @@
 ﻿using Netatmo;
 using Netatmo.Models.Client.Weather.StationsData.DashboardData;
 using NodaTime;
+using System.Text.Json;
+using static Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization;
 
 namespace Conesoft_Website_Kontrol.Services;
 
 class ClimateSensors
 {
-    required public Client? Client { get; init; }
+    Func<Client?> GetClient { get; set; } = () => null;
 
-    private ClimateSensors() { }
+    string tokenpath = "";
 
-    public static async Task<ClimateSensors> Connect(string clientId, string secret, string username, string password)
+    public async Task RefreshToken()
     {
-        Console.WriteLine("Connecting to NetAtmo...");
-        var client = await NetatmoHelpers.Connect(clientId, secret, username, password);
-        return new ClimateSensors { Client = client };
+        var oldtoken = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
+        await GetClient()!.RefreshToken();
+        var newtoken = GetClient()!.CredentialManager.CredentialToken;
+        var token = new AuthToken(oldtoken!.Scope, newtoken.AccessToken, newtoken.ExpiresIn, newtoken.RefreshToken);
+        await File.WriteAllTextAsync(tokenpath, JsonSerializer.Serialize(token));
     }
 
-    public IAsyncEnumerable<Readout> GetReadouts() => Client?.GetReadouts() ?? AsyncEnumerable.Empty<Readout>();
+    public static async Task<ClimateSensors> Connect(string clientId, string secret, string tokenpath)
+    {
+        var token = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
+        var ApiUrl = "https://api.netatmo.com";
+        return new()
+        {
+            tokenpath = tokenpath,
+            GetClient = () =>
+            {
+                var client = new Client(SystemClock.Instance, ApiUrl, clientId, secret);
+
+                client.ProvideOAuth2Token(token!.AccessToken, token!.RefreshToken);
+                return client;
+            }
+        };
+    }
+
+    public async IAsyncEnumerable<Readout> GetReadouts()
+    {
+        Netatmo.Models.Client.DataResponse<Netatmo.Models.Client.Weather.GetStationsDataBody> stations = default!;
+        var client = GetClient()!;
+        try
+        {
+            stations = await client.Weather.GetStationsData();
+        }
+        catch (Exception)
+        {
+            await RefreshToken();
+            stations = await client.Weather.GetStationsData();
+        }
+        foreach (var d in stations.Body.Devices)
+        {
+            yield return new(d.ModuleName, d.DashboardData.Temperature, d.DashboardData.CO2, d.DashboardData.HumidityPercent);
+            foreach (var m in d.Modules)
+            {
+                var outdoor = m.Type == "NAModule1" ? m.GetDashboardData<OutdoorDashBoardData>() : null;
+                var indoor = m.Type == "NAModule4" ? m.GetDashboardData<IndoorDashBoardData>() : null;
+
+                if (outdoor != null || indoor != null)
+                {
+                    yield return new(
+                        Name: m.ModuleName,
+                        Temperature: outdoor?.Temperature ?? indoor!.Temperature,
+                        CO2: indoor?.CO2 ?? null,
+                        Humidity: outdoor?.HumidityPercent ?? indoor!.HumidityPercent
+                    );
+                }
+                else
+                {
+                    yield return new(
+                        Name: m.ModuleName,
+                        Temperature: double.NegativeInfinity,
+                        CO2: null,
+                        Humidity: 0
+                    );
+                }
+            }
+        }
+
+    }
 }
 
 public record Readout(string Name, double Temperature, int? CO2, int Humidity);
-
-static class NetatmoHelpers
-{
-public static async Task<Client?> Connect(string clientId, string secret, string username, string password)
-{
-    try
-    {
-        var client = new Client(SystemClock.Instance, "https://api.netatmo.com/", clientId, secret);
-
-        await client.GenerateToken(username, password, new[] { Scope.HomecoachRead, Scope.PresenceRead, Scope.StationRead, Scope.ThermostatRead });
-
-        return client;
-    }
-    catch (Exception)    
-    {
-        return null;
-    }
-}
-
-public static async IAsyncEnumerable<Readout> GetReadouts(this Client client)
-{
-    var stations = await client.Weather.GetStationsData();
-    foreach (var d in stations.Body.Devices)
-    {
-        yield return new(d.ModuleName, d.DashboardData.Temperature, d.DashboardData.CO2, d.DashboardData.HumidityPercent);
-        foreach (var m in d.Modules)
-        {
-            var outdoor = m.Type == "NAModule1" ? m.GetDashboardData<OutdoorDashBoardData>() : null;
-            var indoor = m.Type == "NAModule4" ? m.GetDashboardData<IndoorDashBoardData>() : null;
-
-            if (outdoor != null || indoor != null)
-            {
-                yield return new(
-                    Name: m.ModuleName,
-                    Temperature: outdoor?.Temperature ?? indoor!.Temperature,
-                    CO2: indoor?.CO2 ?? null,
-                    Humidity: outdoor?.HumidityPercent ?? indoor!.HumidityPercent
-                );
-            }
-            else
-            {
-                yield return new(
-                    Name: m.ModuleName,
-                    Temperature: double.NegativeInfinity,
-                    CO2: null,
-                    Humidity: 0
-                );
-            }
-        }
-    }
-}
-}

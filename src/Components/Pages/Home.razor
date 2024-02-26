@@ -1,4 +1,5 @@
 ﻿@page "/home"
+@using Conesoft.Blazor.NetatmoAuth
 @using Conesoft_Website_Kontrol.Services
 @using Q42.HueApi
 @using Conesoft.Tools
@@ -6,9 +7,10 @@
 @rendermode InteractiveServer
 
 @inject Tools.User user
+@inject NetAtmoConfiguration netAtmoConfiguration
 
 @inject Conesoft_Website_Kontrol.Services.LightControls lightControls
-@* @inject Conesoft_Website_Kontrol.Services.ClimateSensors climateSensors *@
+@inject Conesoft_Website_Kontrol.Services.ClimateSensors climateSensors
 
 <PageTitle>Home Kontrol</PageTitle>
 
@@ -19,67 +21,137 @@
             <section class="room">
                 @if (room.Rooms.FirstOrDefault() is Q42.HueApi.Models.Groups.Group room_ and not null)
                 {
-                    var roomlights = room_.Lights.Select(l => lights.First(alllights => alllights.Id == l)).ToArray();
+                    var roomlights =
+                    room_
+                    .Lights
+                    .Select(l => lights.First(alllights => alllights.Id == l))
+                    .Where(l => l.State.IsReachable == true)
+                    .OrderBy(l => l.Name, new NaturalSortComparer())
+                    .ToArray()
+                    ;
+
                     var anyon = roomlights.Any(l => l.State.On);
+                    var brightness = roomlights.FirstOrDefault()?.State.Brightness / 255d ?? 0;
                     var __class = anyon ? "on" : "off";
                     var __offline = roomlights.All(l => l.State.IsReachable == false);
 
-                    <button class="wide @__class" disabled="@__offline" @onclick="() => ToggleLights(roomlights, turnOn: anyon == false)">
+                    <button class="wide @__class"
+                            disabled="@__offline"
+                            style=@($"--brightness: {brightness}")
+                            @onclick="() => ToggleLights(roomlights, turnOn: anyon == false)"
+                            @onpointerdown="() => ButtonDownBegins(roomlights)">
                         @room.Name
-@*                         @if (room.Sensors.FirstOrDefault() is Readout s and not null)
+                        @if (room.Sensors.FirstOrDefault() is Readout s and not null)
                         {
-                            <br>
-                            <text>@(s.Temperature)°C @(s.CO2)ppm @(s.Humidity)%</text>
-                        } *@
+                            <ul>
+                                <li>@(s.Temperature)°C</li>
+                                <li>@(s.CO2)ppm</li>
+                                <li>@(s.Humidity)%</li>
+                            </ul>
+                        }
                     </button>
 
                     @if (roomlights.Count() > 1)
                     {
                         @foreach (var light in roomlights)
                         {
-                            var _offline = light.State.IsReachable == false;
+                            var _brightness = light.State.Brightness / 255d;
                             var _class = light.State.On ? "on" : "off";
-                            <button class="@_class" disabled="@_offline" @onclick="() => ToggleLight(light)">@light.Name</button>
+                            var _offline = light.State.IsReachable == false;
+
+                            <button class="@_class"
+                                    disabled="@_offline"
+                                    style=@($"--brightness: {_brightness}")
+                                    @onclick="() => ToggleLight(light)"
+                                    @onpointerdown="() => ButtonDownBegins([light])">
+                                @light.Name
+                            </button>
                         }
                     }
                 }
- @*                @if (room.Sensors.FirstOrDefault() is Readout sensor and not null && room.Rooms.FirstOrDefault() == null)
+                @if (room.Sensors.FirstOrDefault() is Readout sensor and not null && room.Rooms.FirstOrDefault() == null)
                 {
                     <button class="wide" disabled>
-                        @sensor.Name - @sensor.Temperature °C - @sensor.CO2 ppm - @sensor.Humidity %
+                        @sensor.Name
+                        <ul>
+                            <li>@(sensor.Temperature)°C</li>
+                            @if(sensor.CO2 is not null)
+                            {
+                                <li>@(sensor.CO2)ppm</li>
+                            }
+                            <li>@(sensor.Humidity)%</li>
+                        </ul>
                     </button>
-                } *@
+                }
             </section>
         }
+    </section>
+    <section>
+        <header>long press room or light to enable brightness control</header>
+        <section>
+            <input type=range min=0 max=255 step=1
+                   disabled="@(!inputEnabled)"
+                   @bind-value=inputRangeValue
+                   @bind-value:after="RefreshInput">
+        </section>
+    </section>
+    <section id="services-3rdparty">
+        <NetatmoAuthorization ClientId=@netAtmoConfiguration.ClientId
+                              ClientSecret=@netAtmoConfiguration.Secret
+                              Scopes="read_station read_thermostat read_presence read_homecoach">
+            <NotAuthorized>
+                <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Authorize Netatmo
+            </NotAuthorized>
+            <Authorized>
+                <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Logout @context.Username (in @context.Home)
+            </Authorized>
+        </NetatmoAuthorization>
     </section>
 </main>
 
 @code {
     IReadOnlyCollection<Q42.HueApi.Models.Groups.Group> rooms = Array.Empty<Q42.HueApi.Models.Groups.Group>();
-    IEnumerable<Light> lights = Array.Empty<Light>();
+    IEnumerable<Light> lights = [];
 
-    // IEnumerable<Readout> sensors = Array.Empty<Readout>();
+    IEnumerable<Readout> sensors = Array.Empty<Readout>();
 
-    record Room(string Name, /*IEnumerable<Readout> Sensors, */IEnumerable<Q42.HueApi.Models.Groups.Group> Rooms);
+    record Room(string Name, IEnumerable<Readout> Sensors, IEnumerable<Q42.HueApi.Models.Groups.Group> Rooms);
 
-    IEnumerable<Room> rooms_ = Array.Empty<Room>();
+    IEnumerable<Room> rooms_ = [];
 
     protected override void OnInitialized() => StartRefreshLoop().GetAwaiter();
 
     async Task Refresh()
     {
+        sensors = await climateSensors.GetReadouts().ToArrayAsync();
+
         rooms = await lightControls.GetRooms();
         lights = await lightControls.GetLights();
 
-        rooms_ = rooms.GroupBy(r => r.Name).Select(r => new Room(r.Key, r));
+        //rooms_ = rooms.GroupBy(r => r.Name).Select(r => new Room(r.Key, r));
 
-        // sensors = await climateSensors.GetReadouts().ToArrayAsync();
-
-        // rooms_ = sensors
-        //     .FullOuterGroupJoin(rooms, s => s.Name, r => r.Name, (s, r, name) => new Room(name, s, r))
-        //     .Where(r => r.Name.Contains("$") == false);
+        rooms_ = sensors
+            .FullOuterGroupJoin(rooms, s => s.Name, r => r.Name, (s, r, name) => new Room(name, s, r))
+            .Where(r => r.Name.Contains("$") == false);
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    DateTime buttonDownBegins = DateTime.MinValue;
+
+    async Task ButtonDownBegins(IEnumerable<Light> lights)
+    {
+        buttonDownBegins = DateTime.UtcNow;
+        currentInput = lights;
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        if (buttonDownBegins != DateTime.MinValue)
+        {
+            inputRangeValue = currentInput.Any() ? currentInput.First().State.Brightness : 0;
+            if (await user.IsInRole("CanEditLights"))
+            {
+                inputEnabled = true;
+            }
+        }
     }
 
     async Task StartRefreshLoop()
@@ -93,23 +165,50 @@
 
     async Task ToggleLight(Light light)
     {
-        if (await user.IsInRole("CanEditLights"))
+        if (DateTime.UtcNow - buttonDownBegins <= TimeSpan.FromSeconds(1))
         {
-            var command = light.State.On ? new LightCommand().TurnOff() : new LightCommand().TurnOn();
-            await lightControls.Client.SendCommandAsync(command, new[] { light.Id });
+            buttonDownBegins = DateTime.MinValue;
 
-            await Refresh();
+            if (await user.IsInRole("CanEditLights"))
+            {
+                var command = light.State.On ? new LightCommand().TurnOff() : new LightCommand().TurnOn();
+                await lightControls.Client.SendCommandAsync(command, new[] { light.Id });
+
+                await Refresh();
+            }
         }
     }
 
     async Task ToggleLights(IEnumerable<Light> lights, bool turnOn)
     {
-        if (await user.IsInRole("CanEditLights"))
+        if (DateTime.UtcNow - buttonDownBegins <= TimeSpan.FromSeconds(1))
         {
-            var command = turnOn ? new LightCommand().TurnOn() : new LightCommand().TurnOff();
-            await lightControls.Client.SendCommandAsync(command, lights.Select(l => l.Id));
+            buttonDownBegins = DateTime.MinValue;
 
-            await Refresh();
+            if (await user.IsInRole("CanEditLights"))
+            {
+                var command = turnOn ? new LightCommand().TurnOn() : new LightCommand().TurnOff();
+                await lightControls.Client.SendCommandAsync(command, lights.Select(l => l.Id));
+
+                await Refresh();
+            }
         }
     }
+
+
+    IEnumerable<Light> currentInput = [];
+    double inputRangeValue = 0;
+    bool inputEnabled = false;
+
+    async Task RefreshInput()
+    {
+        var command = new LightCommand() { Brightness = (byte)inputRangeValue };
+        command = command.TurnOn();
+        await lightControls.Client.SendCommandAsync(command, currentInput.Select(l => l.Id));
+
+        inputEnabled = false;
+
+        await Refresh();
+    }
+
 }
