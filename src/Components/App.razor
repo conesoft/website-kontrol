@@ -7,6 +7,29 @@
     <meta charset="utf-8" />
     <base href="/" />
     <HeadOutlet />
+    <style>
+                /* temporary */
+        body > header > a {
+            scale: 1.5;
+            translate: 0 -0.25rem;
+            padding-inline: 0.25rem;
+            color: var(--accent-color) !important;
+            font-size: 2em;
+            font-weight: bold;
+            line-height: 2rem;
+            margin-inline-start: 1rem;
+            text-decoration: none;
+        }
+        body > header {
+            grid-template-columns: auto 1fr auto calc(100% - env(titlebar-area-width, 100%)) !important;
+        }
+
+        body > header >nav a:first-of-type {
+            scale: 1 !important;
+            translate: 0 !important;
+            padding-inline: 0 !important;
+        }
+    </style>
 </head>
 
 <body>

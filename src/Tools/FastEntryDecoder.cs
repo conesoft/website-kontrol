@@ -8,7 +8,7 @@ namespace Conesoft_Website_Kontrol.Tools
     {
         public static string DecodeDescription(Entry entry)
         {
-            var reg = MyRegex().Replace(entry.Description, string.Empty);
+            var reg = MyRegex().Replace(entry?.Description ?? "", string.Empty);
             return WebUtility.HtmlDecode(reg);
         }
 

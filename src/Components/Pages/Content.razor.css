@@ -1,26 +1,54 @@
-﻿section {
+﻿main {
+    grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+}
+
+section {
     display: grid;
     grid-template:
-        "image .           ." 0
-        "image title       ." auto
-        "image link        ." auto
-        "image description ." 1fr
-        "image .           ." 0
-        / 10rem auto 0
+        ". .           ." 0
+        ". title       ." auto
+        ". link        ." auto
+        ". description ." 1fr
+        ". .           ." 0
+        / 0 auto 0;
+    overflow: hidden;
+    max-height: 13rem;
+    gap: 1rem;
+    background: var(--background-color);
+    position: relative;
+    line-height: 1rem;
 }
+
+    section:has(img) {
+        grid-template:
+            "image .           ." 0
+            "image title       ." auto
+            "image link        ." auto
+            "image description ." 1fr
+            "image .           ." 0
+            / 13rem auto 0;
+    }
 
     section h2 {
         grid-area: title;
         font-weight: 900;
         color: var(--accent-color);
+        font-size: 1.25rem;
+        line-height: 1rem;
+        text-shadow: 0 0 0.125rem black, 0 0 0.25rem black, 0 0 0.5rem black, 0 0 1rem black;
     }
 
     section a {
         grid-area: link;
-        padding: 0.5rem 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    section a::after {
+        content: "";
+        inset: 0;
+        position: absolute;
     }
 
     section img {
@@ -35,8 +63,47 @@
         grid-area: description;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-height:  5rem;
-        line-height: 1rem;
         font-weight: 100;
         opacity: 0.5;
     }
+
+
+
+section {
+    position: relative;
+}
+
+progress:indeterminate, progress:indeterminate:before, progress:indeterminate:after {
+    background: var(--accent-color);
+    place-self: center;
+    width: 1rem;
+    height: 1rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: 0 0 0.5rem var(--accent-color), 0 0 1rem black;
+}
+
+    progress:indeterminate:before {
+        content: "";
+        animation-delay: 0.333s;
+        translate: -1.125rem;
+        animation: spin 1s infinite alternate;
+    }
+
+    progress:indeterminate:after {
+        content: "";
+        animation-delay: 0.666s;
+        translate: 1.125rem;
+        animation: spin 1s infinite alternate;
+    }
+
+@keyframes spin {
+    0% {
+        scale: 50%;
+    }
+
+    100% {
+        scale: 125%;
+    }
+}

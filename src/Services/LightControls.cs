@@ -11,7 +11,7 @@ namespace Conesoft_Website_Kontrol.Services
         {
             var bridges = await HueBridgeDiscovery.CompleteDiscoveryAsync(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15));
 
-            if (bridges.Any())
+            if (bridges.Count != 0)
             {
                 return new() { Client = new LocalHueClient(bridges.First().IpAddress, appKey) };
             }

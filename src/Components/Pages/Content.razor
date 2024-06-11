@@ -5,40 +5,74 @@
 @using System.Net
 @using Conesoft_Website_Kontrol.Tools
 
+@* @attribute [StreamRendering(true)] *@
+
 <PageTitle>Content Kontrol</PageTitle>
 
 <main>
-    @foreach (var entry in Entries.Take(50))
+    @if (Entries.Any())
     {
-        <section>
-            <h2>@WebUtility.HtmlDecode(entry.Name)</h2>
-            <a href="@entry.Url" target="_blank">@entry.Url.CleanUrl()</a>
-            @if (string.IsNullOrWhiteSpace(entry.ImageFilename) == false)
-            {
-                <img src="/content/feeds/thumbnail/@entry.ImageFilename">
-            }
-            <p>@FastEntryDecoder.DecodeDescription(entry)</p>
-        </section>
+        @foreach (var entry in Entries)
+        {
+            <section>
+                <h2>@WebUtility.HtmlDecode(entry.Name)</h2>
+                <a href="@entry.Url" target="_blank">@entry.Url.CleanUrl()</a>
+                @if (string.IsNullOrWhiteSpace(entry.ImageFilename) == false)
+                {
+                    <img src="/content/feeds/thumbnail/@entry.ImageFilename">
+                }
+                <p>@FastEntryDecoder.DecodeDescription(entry)</p>
+            </section>
+        }
     }
 </main>
 
 @code {
     static Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.GlobalStorage / "FromSources" / "Feeds" / "Entries";
 
-    public List<Entry> Entries { get; set; } = new List<Entry>();
+    public IEnumerable<Entry> Entries { get; set; } = [];
 
     public record Entry(string Name, string Url, DateTime Published, string Description, string Category, string Filename)
     {
-        public string? ImageFilename => Storage
-            .Filtered($"{Filename}.*", false)
-            .Where(f => !f.Extension.EndsWith("json"))
-            .FirstOrDefault()?.Name ?? null;
+        private string[] types = ["jpg", "png", "svg", "gif"];
+        public string? ImageFilename { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        var loadedEntries = await Storage.Filtered("*.json", allDirectories: false).Where(f => f.Info.CreationTime > DateTime.Today.AddDays(-1)).ReadFromJson<Entry>();
-        var entries = loadedEntries.NotNull().Select(e => e.Content).OrderByDescending(e => e.Published);
-        Entries = entries.ToList();
+        var within24Hours = DateTime.Today.AddDays(-1);
+
+        using (Timed.Run("all content"))
+        {
+            var loadedEntries = Storage.FilteredFiles("*", allDirectories: false).Where(f => f.Info.CreationTime > within24Hours).OrderByDescending(f => f.Info.CreationTime);
+
+            var entries = await loadedEntries.Where(f => f.Extension == ".json").ReadFromJson<Entry>();
+            Entries = entries.NotNull().Select(e =>
+            {
+                var c = e.Content;
+                c.ImageFilename = loadedEntries.FirstOrDefault(f => f.Extension != ".json" && f.Name.StartsWith(e.NameWithoutExtension))?.Name;
+                return c;
+            });
+        }
+    }
+
+    class Timed : IDisposable
+    {
+        Stopwatch timer;
+        string message;
+        private Timed(string message)
+        {
+            this.message = message;
+            timer = new Stopwatch();
+            timer.Start();
+        }
+
+        public static Timed Run(string message) => new Timed(message);
+
+        public void Dispose()
+        {
+            timer.Stop();
+            Console.WriteLine($"{message}: {timer.Elapsed.Humanize()}");
+        }
     }
 }

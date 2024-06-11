@@ -20,7 +20,7 @@
 </main>
 
 @code {
-    List<Entry> Entries { get; set; } = new();
+    List<Controls.Finances.Entry> Entries { get; set; } = new();
 
     Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.LocalStorage / "Finances";
 
@@ -34,9 +34,9 @@
             {
                 if (changes.ThereAreChanges || changes.FirstRun)
                 {
-                    Entries = (await Task.WhenAll(changes.All.Where(f => f.Extension == ".json").Select(async f =>
+                    Entries = (await Task.WhenAll(changes.All.Files().Where(f => f.Extension == ".json").Select(async f =>
                     {
-                        var entry = await f.WhenReady.ReadFromJson<Entry>();
+                        var entry = await f.WhenReady.ReadFromJson<Controls.Finances.Entry>();
                         if(entry != null)
                         {
                             entry.PathToFile = f.Path;

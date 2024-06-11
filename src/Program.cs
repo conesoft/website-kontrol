@@ -1,18 +1,20 @@
-﻿using Conesoft.Hosting;
+﻿using Conesoft.Blazor.NetatmoAuth;
+using Conesoft.Hosting;
 using Conesoft.Users;
-using Conesoft.Blazor.NetatmoAuth;
 using Conesoft_Website_Kontrol.Components;
 using Conesoft_Website_Kontrol.Services;
 using Conesoft_Website_Kontrol.Tools;
 using Microsoft.Extensions.FileProviders;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
 
 var nac = configuration.GetSection<NetAtmoConfiguration>();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddLoggingToHost()
+    .AddPeriodicGarbageCollection(TimeSpan.FromMinutes(5));
 
 builder.Services.AddSingleton(nac!);
 builder.Services.AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"));
@@ -43,6 +45,15 @@ app
 
 app.MapUsers();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+//var _ = Task.Run(async () =>
+//{
+//    while (true)
+//    {
+//        await Task.Delay(5000);
+//        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+//    }
+//});
 
 app.Run();
 

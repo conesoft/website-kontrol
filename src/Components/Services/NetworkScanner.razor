@@ -31,15 +31,15 @@
 
     protected override void OnInitialized()
     {
-        var _ = Task.Run(async () =>
-        {
-            using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-            while (await periodicTimer.WaitForNextTickAsync())
-            {
-                Addresses = await networkScanner.Scan();
-                await InvokeAsync(StateHasChanged);
-            }
-        });
+        // var _ = Task.Run(async () =>
+        // {
+        //     using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        //     while (await periodicTimer.WaitForNextTickAsync())
+        //     {
+        //         Addresses = await networkScanner.Scan();
+        //         await InvokeAsync(StateHasChanged);
+        //     }
+        // });
         base.OnInitialized();
     }
 }
