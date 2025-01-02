@@ -4,12 +4,12 @@
     @if (Amount > 10)
     {
         <h1>Open amount by Caleigh</h1>
-        <b style="font-size: 2em">@Amount.ToString("0.00") CHF</b>
+        <output>@Amount.ToString("0.00") CHF</output>
     }
     else if (Amount < -10)
     {
         <h1>Prepaid amount by Caleigh</h1>
-        <b style="font-size: 2em">@((-Amount).ToString("0.00")) CHF</b>
+        <output>@((-Amount).ToString("0.00")) CHF</output>
     }
     else
     {
@@ -30,7 +30,12 @@
         if (Entries.Any())
         {
             // SUMME([Bill Amount])*SUMME([Salary Caleigh])/ (SUMME([Salary Dave]) + SUMME([Salary Caleigh]))-SUMME([Transferred by Caleigh])
-            var AllBills = Entries.Where(e => e.Type == Entry.EntryType.Bill).Sum(e => e.Amount);
+            var AllBills = Entries.Where(e => e.Type == Entry.EntryType.Bill).Sum(e => e.For switch
+            {
+                "davepermen" => e.Amount,
+                "caleighc" => -e.Amount,
+                _ => throw new Exception("Broken Bill " + e.Description + " @ " + e.At)
+            });
             var SalaryCaleigh = Entries.Where(e => e.Type == Entry.EntryType.Income && e.For == "caleighc").Sum(e => e.Amount);
             var SalaryDave = Entries.Where(e => e.Type == Entry.EntryType.Income && e.For == "davepermen").Sum(e => e.Amount);
             var TransferredByCaleigh = Entries.Where(e => e.Type == Entry.EntryType.Compensation && e.By == "caleighc" && e.To == "davepermen").Sum(e => e.Amount);

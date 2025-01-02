@@ -13,13 +13,10 @@ var nac = configuration.GetSection<NetAtmoConfiguration>();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddLoggingToHost()
-    .AddPeriodicGarbageCollection(TimeSpan.FromMinutes(5));
-
-builder.Services.AddSingleton(nac!);
-builder.Services.AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"));
-
-builder.Services
+    .AddCompiledHashCacheBuster()
+    .AddPeriodicGarbageCollection(TimeSpan.FromMinutes(5))
+    .AddSingleton(nac!)
+    .AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"))
     .AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - {name}.json")
     .AddSingleton<NetworkScanner>()
     .AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
@@ -27,11 +24,14 @@ builder.Services
     .AddUsersWithStorage()
     .AddTransient<User>()
     .AddCascadingAuthenticationState()
+    .AddResponseCaching()
+    .AddAntiforgery()
     .AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
 
 app
+    .UseCompiledHashCacheBuster()
     .UseStaticFiles(new StaticFileOptions
     {
         RequestPath = "/content/feeds/thumbnail",
@@ -41,19 +41,11 @@ app
     .UseHostingDefaults(useDefaultFiles: true, useStaticFiles: true)
     .UseRouting() // fixes routes for Scoped CSS as well as static files
     .UseStaticFiles()
+    .UseResponseCaching()
     .UseAntiforgery();
 
 app.MapUsers();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
-//var _ = Task.Run(async () =>
-//{
-//    while (true)
-//    {
-//        await Task.Delay(5000);
-//        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
-//    }
-//});
 
 app.Run();
 

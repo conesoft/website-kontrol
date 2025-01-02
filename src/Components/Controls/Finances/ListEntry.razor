@@ -1,7 +1,6 @@
 ﻿<li class="@TypeName" horizontal>
 
-    <div class="type">
-    </div>
+    <div class="type"/>
 
     <section vertical>
         <p class="label">@Entry.Description</p>
@@ -21,8 +20,8 @@
     </section>
     
     <section vertical>
-        <i class="date">@Entry.At.ToLongDateString()</i>
-        <b class="value">@Entry.Amount CHF</b>
+        <time datetime="@Entry.At">@Entry.At.ToLongDateString()</time>
+        <var>@Entry.Amount CHF</var>
     </section>
 
     <menu>
@@ -31,7 +30,7 @@
 </li>
 
 @code {
-    [Parameter] public Entry Entry { get; set; }
+    [Parameter] public Entry Entry { get; set; } = default!;
 
     public string TypeName => Entry.Type.ToString().ToLower();
 

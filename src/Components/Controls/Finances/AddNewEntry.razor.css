@@ -1,3 +1,7 @@
+section {
+    place-self: stretch;
+}
+
 ::deep input[type=radio] {
     display: none;
 }
@@ -6,7 +10,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 1rem;
 }
 
     ::deep form > *:last-child {
@@ -17,4 +20,20 @@
 ::deep input.main {
     width: 100%;
     font-size: 4rem;
+}
+
+::deep input, ::deep button, ::deep label {
+    place-content: center stretch;
+    min-height: 2rem;
+}
+
+::deep [horizontal] {
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+}
+
+::deep fieldset {
+    padding-block: 1rem;
+    place-content: stretch;
+    gap: 1rem;
 }

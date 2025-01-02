@@ -58,11 +58,11 @@
     protected async Task AddEntry()
     {
         var every = New.Type == Entry.EntryType.Bill ? New.Every : Entry.RepetitionType.NoRepetition;
-        var for_ = New.Type == Entry.EntryType.Income ? New.For : null;
+        var @for = (New.Type == Entry.EntryType.Income || New.Type == Entry.EntryType.Bill) ? New.For : null;
         var by = New.Type == Entry.EntryType.Compensation ? "caleighc" : null;
         var to = New.Type == Entry.EntryType.Compensation ? "davepermen" : null;
 
-        var entry = new Entry(Type: New.Type, At: New.At, Description: New.Description, Amount: New.Amount, Every: every, For: for_, By: by, To: to);
+        var entry = new Entry(Type: New.Type, At: New.At, Description: New.Description, Amount: New.Amount, Every: every, For: @for, By: by, To: to);
 
         var name = entry.Type.ToString() + " " + entry.Description + " " + entry.At.ToString("yyyy-MM-dd");
         var file = File.From("");

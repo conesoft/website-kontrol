@@ -5,5 +5,5 @@ public record Entry(Entry.EntryType Type, DateTime At, string Description, decim
     public enum EntryType { Invalid, Bill, Income, Compensation }
     public enum RepetitionType { NoRepetition, Month }
 
-    public string PathToFile { get; set; }
+    public string PathToFile { get; set; } = "";
 }

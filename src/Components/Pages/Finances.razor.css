@@ -1,6 +1,7 @@
 ﻿main {
     display: grid;
     gap: 1rem;
+    place-self: stretch;
 }
 
 @media (aspect-ratio < 1) {
@@ -22,11 +23,22 @@
         grid-template:
             "form list" 1fr
             "form compensation" auto
-            / 1fr 2fr;
+            / minmax(30rem, 1fr) 2fr;
         overflow: hidden;
         contain: strict;
         /*margin: 1rem;*/
     }
+}
+
+::deep :where(section), ::deep :where(section *) {
+    grid-template-columns: initial;
+    grid-column: initial;
+    place-content: stretch;
+}
+
+main > ::deep section {
+    background: var(--background-color);
+    padding: 1rem;
 }
 
     ::deep section#list {

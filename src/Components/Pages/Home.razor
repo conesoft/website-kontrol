@@ -22,12 +22,12 @@
                 @if (room.Rooms.FirstOrDefault() is Q42.HueApi.Models.Groups.Group room_ and not null)
                 {
                     var roomlights =
-                    room_
-                    .Lights
-                    .Select(l => lights.First(alllights => alllights.Id == l))
-                    .Where(l => l.State.IsReachable == true)
-                    .OrderBy(l => l.Name, new NaturalSortComparer())
-                    .ToArray()
+                        room_
+                        .Lights
+                        .Select(l => lights.First(alllights => alllights.Id == l))
+                        .Where(l => l.State.IsReachable == true)
+                        .OrderBy(l => l.Name, new NaturalSortComparer())
+                        .ToArray()
                     ;
 
                     var anyon = roomlights.Any(l => l.State.On);
@@ -172,7 +172,10 @@
             if (await user.IsInRole("CanEditLights"))
             {
                 var command = light.State.On ? new LightCommand().TurnOff() : new LightCommand().TurnOn();
-                await lightControls.Client.SendCommandAsync(command, new[] { light.Id });
+                if(lightControls.Client is LocalHueClient client)
+                {
+                    await client.SendCommandAsync(command, new[] { light.Id });
+                }
 
                 await Refresh();
             }
@@ -188,8 +191,10 @@
             if (await user.IsInRole("CanEditLights"))
             {
                 var command = turnOn ? new LightCommand().TurnOn() : new LightCommand().TurnOff();
-                await lightControls.Client.SendCommandAsync(command, lights.Select(l => l.Id));
-
+                if (lightControls.Client is LocalHueClient client)
+                {
+                    await client.SendCommandAsync(command, lights.Select(l => l.Id));
+                }
                 await Refresh();
             }
         }
@@ -204,8 +209,10 @@
     {
         var command = new LightCommand() { Brightness = (byte)inputRangeValue };
         command = command.TurnOn();
-        await lightControls.Client.SendCommandAsync(command, currentInput.Select(l => l.Id));
-
+        if (lightControls.Client is LocalHueClient client)
+        {
+            await client.SendCommandAsync(command, currentInput.Select(l => l.Id));
+        }
         inputEnabled = false;
 
         await Refresh();

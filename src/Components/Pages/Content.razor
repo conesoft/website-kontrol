@@ -1,4 +1,5 @@
 ﻿@page "/content"
+@page "/tile"
 @using Conesoft.Tools
 @using System.Diagnostics
 @using System.Text.RegularExpressions
@@ -16,7 +17,7 @@
         {
             <section>
                 <h2>@WebUtility.HtmlDecode(entry.Name)</h2>
-                <a href="@entry.Url" target="_blank">@entry.Url.CleanUrl()</a>
+                 <a href="@entry.Url" target="_blank">@entry.Url.CleanUrl()</a>
                 @if (string.IsNullOrWhiteSpace(entry.ImageFilename) == false)
                 {
                     <img src="/content/feeds/thumbnail/@entry.ImageFilename">

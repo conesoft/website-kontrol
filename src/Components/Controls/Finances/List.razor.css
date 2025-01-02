@@ -1,26 +1,24 @@
 section {
     overflow: hidden;
     position: relative;
+    overflow: auto;
 }
 
-    section .reverse {
-        overflow: auto;
-        display: flex;
-        flex-direction: column-reverse;
-        padding: 1rem;
-    }
+section .reverse {
+    display: flex;
+    flex-direction: column-reverse;
+}
 
-    section::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        box-shadow: inset 0 4rem 2rem -2rem var(--background-color);
-        pointer-events: none;
-    }
+section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 4rem 2rem -2rem var(--background-color);
+    pointer-events: none;
+}
 
 details[open] {
     background: var(--background-color);
-    padding-top: 1rem;
     display: grid;
 }
 
@@ -32,15 +30,22 @@ details[open] {
         width: min-content;*/
     }
 
+    /* yo this is chaos */
+    details, ul {
+        gap: 1rem;
+    }
+    details details {
+        gap: 0;
+    }
+
 details:not([open]) {
-    display: inline;
-    padding: 1ch 1ch 1ch 0;
 }
 
     details:not([open]) > summary {
     }
 
 summary {
+    display: grid;
     line-height: 2rem;
     list-style: none;
     text-align: center;
@@ -59,10 +64,8 @@ summary {
 
 .months {
     background: var(--background-color-90);
-    display: inline-block;
 }
 
     .months > li {
-        display: inline;
         background: none;
     }

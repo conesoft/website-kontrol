@@ -11,13 +11,16 @@ li > section {
     font-weight: bold;
 }
 
-.date {
+time {
     opacity: 0.7;
+    font-style: italic;
+    font-weight: 100;
 }
 
 .who {
     font-weight: 100;
     opacity: 0.9;
+    display: inline;
 }
 
 .value {
@@ -30,8 +33,11 @@ img {
     place-self: center;
 }
 
-b {
+var {
+    font-weight: 900;
     color: var(--entry-color);
+    place-self: center end;
+    font-style: normal;
 }
 
 div {

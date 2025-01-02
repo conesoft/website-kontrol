@@ -15,6 +15,7 @@ public partial class Content
     {
         private string[] types = ["jpg", "png", "svg", "gif"];
         public string? ImageFilename { get; set; }
+        public string DescriptionIntro => $"{string.Join('.', (Description ?? "").Split('.', 5 + 1, StringSplitOptions.None).Take(5))}.";
     }
 
     protected override async Task OnInitializedAsync()
@@ -23,7 +24,11 @@ public partial class Content
 
         using (Timed.Run("all content"))
         {
-            var loadedEntries = Storage.FilteredFiles("*", allDirectories: false).Where(f => f.Info.CreationTime > within24Hours).OrderByDescending(f => f.Info.CreationTime);
+            var loadedEntries = Storage
+                .FilteredFiles("*", allDirectories: false)
+                .Where(f => f.Info.CreationTime > within24Hours)
+                .OrderByDescending(f => f.Info.CreationTime)
+                .ToArray(); // don't remove this! huge performance issue if you do
 
             var entries = await loadedEntries.Where(f => f.Extension == ".json").ReadFromJson<Entry>();
             Entries = entries.NotNull().Select(e =>

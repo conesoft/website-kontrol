@@ -2,14 +2,21 @@ section {
     display: grid;
     place-items: stretch;
     line-height: 3rem;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
 }
 
     section *:last-child {
         text-align: end;
     }
 
+h1 {
+    line-height: 1rem;
+}
 
-    b {
-        color: var(--entry-color);
-        padding-inline-end: 1rem;
-    }
+output {
+    color: var(--entry-color);
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1rem;
+}
