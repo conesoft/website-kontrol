@@ -5,6 +5,9 @@
 @using Conesoft.Files
 @using Conesoft.Tools
 @using Serilog
+@using Conesoft.Hosting
+
+@inject HostEnvironment environment
 
 @implements IDisposable
 
@@ -25,7 +28,7 @@
 @code {
     List<Controls.Finances.Entry> Entries { get; set; } = new();
 
-    Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.LocalStorage / "Finances";
+    Conesoft.Files.Directory Storage => environment.Local.Storage / "Finances";
 
     CancellationTokenSource? cts;
 

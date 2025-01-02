@@ -1,4 +1,8 @@
-﻿<section @attributes="@InputAttributes">
+﻿@using Conesoft.Hosting
+
+@inject HostEnvironment environment
+
+<section @attributes="@InputAttributes">
     <EditForm Model="New" Context="AddEntryFormContext" OnSubmit="AddEntry">
     <fieldset horizontal>
         <legend>entry type</legend>
@@ -41,7 +45,7 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = new();
 
-    Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.LocalStorage / "Finances";
+    Conesoft.Files.Directory Storage => environment.Local.Storage / "Finances";
 
     record EditableEntry()
     {

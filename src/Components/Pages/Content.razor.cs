@@ -1,19 +1,18 @@
 using Conesoft.Files;
-using Conesoft.Tools;
 using Humanizer;
 using Serilog;
 using System.Diagnostics;
 
+
 namespace Conesoft_Website_Kontrol.Components.Pages;
 public partial class Content
 {
-    private static readonly Conesoft.Files.Directory Storage = Conesoft.Hosting.Host.GlobalStorage / "FromSources" / "Feeds" / "Entries";
+    private Conesoft.Files.Directory Storage => environment.Global.Storage / "FromSources" / "Feeds" / "Entries";
 
     public IEnumerable<Entry> Entries { get; set; } = [];
 
     public record Entry(string Name, string Url, DateTime Published, string Description, string Category, string Filename)
     {
-        private string[] types = ["jpg", "png", "svg", "gif"];
         public string? ImageFilename { get; set; }
         public string DescriptionIntro => $"{string.Join('.', (Description ?? "").Split('.', 5 + 1, StringSplitOptions.None).Take(5))}.";
     }
