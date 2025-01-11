@@ -49,11 +49,7 @@ div {
     place-self: center;
 }
 
-menu {
-}
-
 button {
     width: 3rem;
     aspect-ratio: 1;
-    --button-color: var(--danger-color);
 }

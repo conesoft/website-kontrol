@@ -1,16 +1,13 @@
 ﻿@using Conesoft.Blazor.Components
+@using Conesoft.PwaGenerator
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head prefix="og: http://ogp.me/ns#">
-    <meta charset="utf-8" />
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <HtmlHead Cdn="new" />
-    <HeadOutlet />
+    <HtmlHead />
+    <PwaHeaderTags />
 </head>
-
 <body>
     <Routes />
     <BootBlazor />

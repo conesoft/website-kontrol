@@ -1,6 +1,7 @@
 ﻿//using Conesoft.Blazor.NetatmoAuth;
 using Conesoft.Blazor.Components.Interfaces;
 using Conesoft.Hosting;
+using Conesoft.PwaGenerator;
 using Conesoft.Users;
 using Conesoft_Website_Kontrol.Components;
 //using Conesoft_Website_Kontrol.Services;
@@ -48,6 +49,8 @@ app
     .UseStaticFiles()
     .UseResponseCaching()
     .UseAntiforgery();
+
+app.MapPwaInformationFromAppSettings();
 
 app.MapUsersWithStorage();
 
