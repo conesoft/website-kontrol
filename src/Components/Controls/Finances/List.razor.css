@@ -1,12 +1,8 @@
-section {
-    overflow: hidden;
-    position: relative;
-    overflow: auto;
-}
-
 section .reverse {
     display: flex;
     flex-direction: column-reverse;
+    overflow-x: clip;
+    overflow-y: auto;
 }
 
 section::after {

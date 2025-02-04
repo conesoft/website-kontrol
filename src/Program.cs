@@ -23,39 +23,28 @@ builder
 
 builder.Services
     .AddCompiledHashCacheBuster()
+    .AddHttpClient()
     //.AddPeriodicGarbageCollection(TimeSpan.FromMinutes(5))
     //.AddSingleton(nac!)
     //.AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"))
     //.AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - {name}.json")
     //.AddSingleton<NetworkScanner>()
     //.AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
-    .AddHttpClient()
-    .AddCascadingAuthenticationState()
-    .AddResponseCaching()
-    .AddAntiforgery()
     .AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
 
 app
-    .UseCompiledHashCacheBuster()
     .UseStaticFiles(new StaticFileOptions
     {
         RequestPath = "/content/feeds/thumbnail",
         FileProvider = new PhysicalFileProvider((app.Services.GetRequiredService<HostEnvironment>().Global.Storage / "FromSources" / "Feeds" / "Entries").Path)
     })
-    .UseDeveloperExceptionPage()
-    .UseRouting() // fixes routes for Scoped CSS as well as static files
-    .UseStaticFiles()
-    .UseResponseCaching()
-    .UseAntiforgery();
+    ;
 
 app.MapPwaInformationFromAppSettings();
-
 app.MapUsersWithStorage();
-
 app.MapStaticAssets();
-
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();

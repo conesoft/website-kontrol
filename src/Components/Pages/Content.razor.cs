@@ -29,11 +29,11 @@ public partial class Content
                 .OrderByDescending(f => f.Info.CreationTime)
                 .ToArray(); // don't remove this! huge performance issue if you do
 
-            var entries = await loadedEntries.Where(f => f.Extension == ".json").ReadFromJson<Entry>();
+            var entries = await loadedEntries.Where(f => f.Extension == "json").ReadFromJson<Entry>();
             Entries = entries.NotNull().Select(e =>
             {
                 var c = e.Content;
-                c.ImageFilename = loadedEntries.FirstOrDefault(f => f.Extension != ".json" && f.Name.StartsWith(e.NameWithoutExtension))?.Name;
+                c.ImageFilename = loadedEntries.FirstOrDefault(f => f.Extension != "json" && f.Name.StartsWith(e.NameWithoutExtension))?.Name;
                 return c;
             });
         }

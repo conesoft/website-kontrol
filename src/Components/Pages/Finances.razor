@@ -15,8 +15,8 @@
 
 <PageTitle>Finances Kontrol</PageTitle>
 
-<main>
-    <AuthorizeView Roles="CanSeeFinances">
+<main class="fit-screen">
+    <AuthorizeView Roles="Family">
         <Authorized>
             <List id="list" Entries="@Entries" />
             <OpenAmount id="compensation" Entries="@Entries" />
@@ -49,7 +49,7 @@
                     cts = new();
                     await foreach (var _ in Storage.Live(allDirectories: false, cts.Token))
                     {
-                        Entries = (await Task.WhenAll(Storage.Files.Where(f => f.Extension == ".json").Select(async f =>
+                        Entries = (await Task.WhenAll(Storage.Files.Where(f => f.Extension == "json").Select(async f =>
                         {
                             try
                             {

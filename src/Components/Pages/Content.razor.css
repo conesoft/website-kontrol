@@ -14,7 +14,7 @@ main * {
     grid-column: auto;
 }
 
-section {
+article {
     display: grid;
     grid-template:
         ". .           ." 0
@@ -31,13 +31,11 @@ section {
     line-height: 1rem;
 }
 
-section:hover, section:focus-within {
-    box-shadow: 0 0 12rem rgba(0, 0, 0, 0.25), 0 0 1rem rgba(0, 0, 0, 0.75);
-    scale: 1.005;
-    z-index: 1;
-}
+    article:hover, article:focus-within {
+        scale: 1.005;
+    }
 
-    section:has(img) {
+    article:has(img) {
         grid-template:
             "image .           ." 0
             "image title       ." auto
@@ -47,7 +45,7 @@ section:hover, section:focus-within {
             / var(--image-width) auto 0;
     }
 
-    section h2 {
+    article h2 {
         grid-area: title;
         font-weight: 900;
         color: var(--accent-color);
@@ -56,20 +54,20 @@ section:hover, section:focus-within {
         text-shadow: 0 0 0.125rem black, 0 0 0.25rem black, 0 0 0.5rem black, 0 0 1rem black;
     }
 
-    section a {
+    article a {
         grid-area: link;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    section a::after {
-        content: "";
-        inset: 0;
-        position: absolute;
-    }
+        article a::after {
+            content: "";
+            inset: 0;
+            position: absolute;
+        }
 
-    section img {
+    article img {
         grid-area: image;
         place-self: stretch;
         object-fit: cover;
@@ -77,7 +75,7 @@ section:hover, section:focus-within {
         aspect-ratio: 1;
     }
 
-    section p {
+    article p {
         grid-area: description;
         overflow: hidden;
         text-overflow: ellipsis;
