@@ -1,0 +1,143 @@
+﻿@using Conesoft.Blazor.NetatmoAuth
+@using Conesoft_Website_Kontrol.Features.LightControls.Services
+@using Conesoft_Website_Kontrol.Services
+@using Q42.HueApi
+@using Conesoft.Tools;
+@using Conesoft_Website_Kontrol.Tools.BackgroundInitialization
+@using Q42.HueApi.Models.Groups
+
+@rendermode InteractiveServer
+
+<section class="home">
+    @foreach (var room in rooms)
+    {
+        <section class="room">
+            @{
+                var roomlights = room
+                    .Lights
+                    .Select(l => lights.First(alllights => alllights.Id == l))
+                    .Where(l => l.State.IsReachable == true)
+                    .OrderBy(l => l.Name, new NaturalSortComparer())
+                    .ToArray()
+                ;
+
+                var anyon = roomlights.Any(l => l.State.On);
+                var brightness = roomlights.FirstOrDefault()?.State.Brightness / 255d ?? 0;
+                var __class = anyon ? "on" : "off";
+                var __offline = roomlights.All(l => l.State.IsReachable == false);
+
+                <button class="wide @__class"
+                        disabled="@__offline"
+                        style=@($"--brightness: {brightness}")
+                        @onclick="() => ToggleLights(roomlights, turnOn: anyon == false)"
+                        @onpointerdown="() => ButtonDownBegins(roomlights)">
+                    @room.Name
+                </button>
+
+                @if (roomlights.Count() > 1)
+                {
+                    @foreach (var light in roomlights)
+                    {
+                        var _brightness = light.State.Brightness / 255d;
+                        var _class = light.State.On ? "on" : "off";
+                        var _offline = light.State.IsReachable == false;
+
+                        <button class="@_class"
+                                disabled="@_offline"
+                                style=@($"--brightness: {_brightness}")
+                                @onclick="() => ToggleLight(light)"
+                                @onpointerdown="() => ButtonDownBegins([light])">
+                            @light.Name
+                        </button>
+                    }
+                }
+            }
+        </section>
+    }
+</section>
+
+<section class="controls">
+    <header>long press room or light to enable brightness control</header>
+    <section>
+        <input type=range min=0 max=255 step=1
+               disabled="@(!inputEnabled)"
+               @bind-value=inputRangeValue
+               @bind-value:after="RefreshInput">
+    </section>
+</section>
+
+
+@code {
+    [Parameter]
+    public LocalHueClient LocalHueClient { get; set; } = default!;
+
+    IEnumerable<Light> lights = [];
+
+    IEnumerable<Group> rooms = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        rooms = (await LocalHueClient.GetGroupsAsync()).Where(g => g.Type == Q42.HueApi.Models.Groups.GroupType.Room);
+        lights = await LocalHueClient.GetLightsAsync();
+    }
+
+    DateTime buttonDownBegins = DateTime.MinValue;
+
+    async Task ButtonDownBegins(IEnumerable<Light> lights)
+    {
+        buttonDownBegins = DateTime.UtcNow;
+        currentInput = lights;
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        if (buttonDownBegins != DateTime.MinValue)
+        {
+            inputRangeValue = currentInput.Any() ? currentInput.First().State.Brightness : 0;
+
+            inputEnabled = true;
+        }
+    }
+
+    async Task ToggleLight(Light light)
+    {
+        if (DateTime.UtcNow - buttonDownBegins <= TimeSpan.FromSeconds(1))
+        {
+            buttonDownBegins = DateTime.MinValue;
+
+            var command = light.State.On ? new LightCommand().TurnOff() : new LightCommand().TurnOn();
+            await LocalHueClient.SendCommandAsync(command, [light.Id]);
+
+            await OnParametersSetAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task ToggleLights(IEnumerable<Light> lights, bool turnOn)
+    {
+        if (DateTime.UtcNow - buttonDownBegins <= TimeSpan.FromSeconds(1))
+        {
+            buttonDownBegins = DateTime.MinValue;
+
+            var command = turnOn ? new LightCommand().TurnOn() : new LightCommand().TurnOff();
+            await LocalHueClient.SendCommandAsync(command, lights.Select(l => l.Id));
+
+            await OnParametersSetAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+
+    IEnumerable<Light> currentInput = [];
+    double inputRangeValue = 0;
+    bool inputEnabled = false;
+
+    async Task RefreshInput()
+    {
+        var command = new LightCommand() { Brightness = (byte)inputRangeValue };
+        command = command.TurnOn();
+        await LocalHueClient.SendCommandAsync(command, currentInput.Select(l => l.Id));
+        inputEnabled = false;
+
+        await OnParametersSetAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

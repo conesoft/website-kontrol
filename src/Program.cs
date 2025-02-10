@@ -1,16 +1,9 @@
-﻿//using Conesoft.Blazor.NetatmoAuth;
-using Conesoft.Blazor.Components.Interfaces;
-using Conesoft.Hosting;
+﻿using Conesoft.Hosting;
 using Conesoft.PwaGenerator;
-using Conesoft.Users;
 using Conesoft_Website_Kontrol.Components;
-//using Conesoft_Website_Kontrol.Services;
-using Conesoft_Website_Kontrol.Tools;
+using Conesoft_Website_Kontrol.Features.LightControls.Extensions;
+using Conesoft_Website_Kontrol.Services;
 using Microsoft.Extensions.FileProviders;
-
-//var configuration = new ConfigurationBuilder().AddJsonFile(Conesoft.Hosting.Host.GlobalSettings.Path).Build();
-
-//var nac = configuration.GetSection<NetAtmoConfiguration>();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,20 +12,27 @@ builder
     .AddUsersWithStorage()
     .AddHostEnvironmentInfo()
     .AddLoggingService()
+
+    .AddLightControls()
     ;
 
 builder.Services
     .AddCompiledHashCacheBuster()
     .AddHttpClient()
-    //.AddPeriodicGarbageCollection(TimeSpan.FromMinutes(5))
-    //.AddSingleton(nac!)
-    //.AddSingleton(await ClimateSensors.Connect(nac.ClientId, nac.Secret, @"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - token.json"))
-    //.AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"D:\Hosting\Settings\Websites\Services\3rd Party Tokens\Netatmo - {name}.json")
-    //.AddSingleton<NetworkScanner>()
-    //.AddSingleton(await LightControls.ConnectToBridge(configuration.GetSection<PhilipsHueConfiguration>().AppKey))
-    .AddRazorComponents().AddInteractiveServerComponents();
+    //.AddSingleton(await ClimateSensors.Connect("", "", ""))
+    //.AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"{name}.json")
+    .AddSingleton<NetworkScanner>()
+
+    .AddRazorComponents().AddInteractiveServerComponents().AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(0);
+        options.DisconnectedCircuitMaxRetained = 0;
+    });
 
 var app = builder.Build();
+
+var section = app.Configuration.GetSection("philips-hue");
 
 app
     .UseStaticFiles(new StaticFileOptions
@@ -48,14 +48,3 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();
-
-//record PhilipsHueConfiguration(string AppKey) : TypedConfigurationHelper.ISection
-//{
-//    public static string SectionName => "philips-hue";
-//}
-
-//record NetAtmoConfiguration(string ClientId, string Secret, string Username, string Password) : TypedConfigurationHelper.ISection
-//{
-//    public static string SectionName => "netatmo";
-//}
-

@@ -1,45 +1,86 @@
 ﻿@page "/network"
+@using System.Net.NetworkInformation
+@using static Conesoft_Website_Kontrol.Services.NetworkScanner
 @inject Conesoft_Website_Kontrol.Services.NetworkScanner networkScanner
 
-<section green>
-    <h1>ip addresses</h1>
-    <table>
-        <tbody>
-            <tr>
-                <td>server address</td>
-                <td default>@networkScanner.My</td>
-            </tr>
-            <tr>
-                <td>local network</td>
-                <td default>@(networkScanner.Network + "0")</td>
-            </tr>
-            @foreach(var address in Addresses) {
-                <tr>
-                    <td>@address.Name</td>
-                    <td default>
-                        <a href="http://@address.Address" target="_blank">@address.Address</a>
-                    </td>
-                </tr>
+@implements IDisposable
+
+@rendermode InteractiveServer
+
+<main>
+    <section title="ip addresses">
+        <ul>
+            <li class="active">
+                <i class="name">local network</i>
+                <b class="ip">@(networkScanner.Network + "0")</b>
+            </li>
+            <li class="active">
+                <i class="name">@AllAddresses.Values.Where(a => a.Address == networkScanner.My).Select(a => a.Name + " (server address)").FirstOrDefault("server address")</i>
+                <b class="ip">@networkScanner.My</b>
+                <aside class="mac">@AllAddresses.Values.Where(a => a.Address == networkScanner.My).Select(a => a.MacFormatted).FirstOrDefault()</aside>
+                @if (Addresses.Where(a => a.Address == networkScanner.My).Select(a => a.Vendor).FirstOrDefault() is string vendor)
+                {
+                    if (vendor == "")
+                    {
+                        <i class="vendor">vendor unknown</i>
+                    }
+                    else
+                    {
+                        <aside class="vendor">@vendor</aside>
+                    }
+                }
+            </li>
+            @foreach (var address in AllAddresses.Values.Where(a => a.Address != networkScanner.My).OrderBy(a => int.Parse(a.Address.Split(".").Last())))
+            {
+                <li class=@(Addresses.Any(a => a.Mac == address.Mac) ? "active" : "")>
+                    <i class="name">@address.Name</i>
+                    <b class="ip"><a href="http://@address.Address" target="_blank">@address.Address</a></b>
+                    <aside class="mac">@address.MacFormatted</aside>
+                    @if (address.Vendor != null)
+                    {
+                        if (address.Vendor == "")
+                        {
+                            <i class="vendor">vendor unknown</i>
+                        }
+                        else
+                        {
+                            <aside class="vendor">@address.Vendor</aside>
+                        }
+                    }
+                </li>
             }
-        </tbody>
-    </table>
-</section>
+        </ul>
+    </section>
+</main>
 
 
 @code {
-    public Conesoft_Website_Kontrol.Services.NetworkScanner.AddressWithName[] Addresses = Array.Empty<Conesoft_Website_Kontrol.Services.NetworkScanner.AddressWithName>();
+    public AddressWithName[] Addresses = [];
+    public static Dictionary<PhysicalAddress, AddressWithName> AllAddresses = [];
+
+    CancellationTokenSource? cancellationTokenSource;
+    void IDisposable.Dispose() => cancellationTokenSource?.Cancel();
 
     protected override void OnInitialized()
     {
-        // var _ = Task.Run(async () =>
-        // {
-        //     using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-        //     while (await periodicTimer.WaitForNextTickAsync())
-        //     {
-        //         Addresses = await networkScanner.Scan();
-        //         await InvokeAsync(StateHasChanged);
-        //     }
-        // });
+        cancellationTokenSource = new CancellationTokenSource();
+        var _ = Task.Run(async () =>
+        {
+            using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+            do
+            {
+                Addresses = await networkScanner.Scan();
+                foreach (var address in Addresses)
+                {
+                    if (address.Mac != null)
+                    {
+                        AllAddresses[address.Mac] = address;
+                    }
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+            while (await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token));
+        }, cancellationTokenSource.Token);
         base.OnInitialized();
     }
 }

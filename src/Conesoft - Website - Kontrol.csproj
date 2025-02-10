@@ -7,28 +7,19 @@
 		<RootNamespace>Conesoft_Website_Kontrol</RootNamespace>
 	</PropertyGroup>
 
-	<ItemGroup Label="Temporarily disabling support for home controls">
-	  <Compile Remove="Services\**" />
-	  <Content Remove="Services\**" />
-	  <EmbeddedResource Remove="Services\**" />
-	  <None Remove="Services\**" />
-	  <Content Remove="Components\Pages\Home.razor" />
-	  <Content Remove="Components\Services\NetworkScanner.razor" />
-	  <None Remove="Components\Pages\Home.razor.css" />
-	</ItemGroup>
-
 	<ItemGroup>
-	  <None Include="Properties\PublishProfiles\Deploy.pubxml.user" />
-	</ItemGroup>
-
-	<ItemGroup>
+		<PackageReference Include="ArpLookup" Version="2.0.3" />
 		<PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
-		<PackageReference Include="Conesoft.Hosting" Version="3.4.12" />
+		<PackageReference Include="Conesoft.Hosting" Version="3.4.14" />
+		<PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
+		<PackageReference Include="Q42.HueApi" Version="3.23.2" />
 		<PackageReference Include="System.Linq.Async.Queryable" Version="6.0.1" />
+		<PackageReference Include="ThomasLevesque.WeakEvent" Version="4.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\blazor-components\src\Blazor Components.csproj" />
+	  <ProjectReference Include="..\..\nuget-blazor-netatmoauth\src\Conesoft.Blazor.NetatmoAuth.csproj" />
 	</ItemGroup>
 
 </Project>

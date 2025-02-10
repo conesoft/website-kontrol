@@ -1,0 +1,37 @@
+main {
+    grid-template-columns: 0 1rem auto auto auto 1fr;
+}
+
+li {
+    grid-column: span 6;
+}
+
+li:not(.active) > * {
+    opacity: 0.7;
+}
+
+i.name {
+    text-align: right;
+}
+
+b.ip, b.ip * {
+    text-align: right;
+    color: var(--accent-color);
+}
+
+aside.mac {
+    font-weight: 100;
+    opacity: 0.8;
+}
+
+.vendor {
+    color: var(--accent-color-50);
+    font-weight: 400;
+}
+
+aside.vendor {
+}
+i.vendor {
+    opacity: 0.7;
+    font-weight: 100;
+}
