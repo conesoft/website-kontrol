@@ -46,8 +46,18 @@ section.room button {
     /*border-radius: 3rem;*/
 }
 
+    section.room button ul {
+        justify-content: center;
+        padding: 1rem;
+    }
+
     section.room button:disabled {
         opacity: 0.3;
+        background: color-mix(in srgb, lightyellow 10%, black);
+    }
+
+    section.room button:disabled:hover {
+        box-shadow: none;
     }
 
     section.room button.on {
@@ -87,6 +97,7 @@ main section.home button.wide {
 
 main section.controls {
 }
+
     main section.controls header {
         text-align: center;
         font-style: italic;
@@ -111,6 +122,7 @@ main section.controls {
 
 section:has(input:disabled) {
     opacity: 0.25;
+    box-shadow: none;
 }
 
 input:disabled {

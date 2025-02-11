@@ -1,0 +1,54 @@
+﻿@page "/netatmotester"
+@using Conesoft_Website_Kontrol.Features.ClimateSensors.Options
+@using Conesoft_Website_Kontrol.Features.ClimateSensors.Services
+@using Conesoft_Website_Kontrol.Tools.BackgroundInitialization
+@using Microsoft.Extensions.Options
+
+@rendermode InteractiveServer
+
+@inject IWhenAvailable<ClimateSensors> climateSensors
+@inject IOptions<NetatmoOptions> netAtmoConfiguration
+
+<main>
+    <section title="netatmo data">
+        <ul>
+            @foreach (var readout in readouts)
+            {
+                <li><section>@readout.Name @(readout.CO2)ppm @(readout.Temperature)°C @(readout.Humidity)%</section></li>
+            }
+        </ul>
+    </section>
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <section title="netatmo tester">
+                <Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization ClientId="@netAtmoConfiguration.Value.ClientId"
+                                                                  ClientSecret="@netAtmoConfiguration.Value.Secret"
+                                                                  Scopes="read_station read_thermostat read_presence read_homecoach">
+                    <Authorized Context="netatmoContext">
+                        <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Logout @netatmoContext.Username (in @netatmoContext.Home)
+                    </Authorized>
+                    <NotAuthorized>
+                        <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Authorize Netatmo
+                    </NotAuthorized>
+                </Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization>
+            </section>
+
+        </Authorized>
+    </AuthorizeView>
+</main>
+
+@code {
+    Readout[] readouts = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (RendererInfo.IsInteractive)
+        {
+            climateSensors.WhenAvailable(this, async my =>
+            {
+                my.readouts = await my.climateSensors.Instance!.GetReadouts().ToArrayAsync();
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+    }
+}

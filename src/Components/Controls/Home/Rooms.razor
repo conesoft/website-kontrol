@@ -1,4 +1,5 @@
 ﻿@using Conesoft.Blazor.NetatmoAuth
+@using Conesoft_Website_Kontrol.Features.ClimateSensors.Services
 @using Conesoft_Website_Kontrol.Features.LightControls.Services
 @using Conesoft_Website_Kontrol.Services
 @using Q42.HueApi
@@ -12,13 +13,14 @@
     @foreach (var room in rooms)
     {
         <section class="room">
-            @{
-                var roomlights = room
-                    .Lights
-                    .Select(l => lights.First(alllights => alllights.Id == l))
-                    .Where(l => l.State.IsReachable == true)
-                    .OrderBy(l => l.Name, new NaturalSortComparer())
-                    .ToArray()
+            @if (room.Rooms.FirstOrDefault() is Q42.HueApi.Models.Groups.Group room_ and not null)
+            {
+                var roomlights = room_
+                .Lights
+                .Select(l => lights.First(alllights => alllights.Id == l))
+                .Where(l => l.State.IsReachable == true)
+                .OrderBy(l => l.Name, new NaturalSortComparer())
+                .ToArray()
                 ;
 
                 var anyon = roomlights.Any(l => l.State.On);
@@ -32,6 +34,14 @@
                         @onclick="() => ToggleLights(roomlights, turnOn: anyon == false)"
                         @onpointerdown="() => ButtonDownBegins(roomlights)">
                     @room.Name
+                    @if (room.Sensors.FirstOrDefault() is Readout s and not null)
+                    {
+                        <ul>
+                            <li>@(s.Temperature)°C</li>
+                            <li>@(s.CO2)ppm</li>
+                            <li>@(s.Humidity)%</li>
+                        </ul>
+                    }
                 </button>
 
                 @if (roomlights.Count() > 1)
@@ -52,6 +62,20 @@
                     }
                 }
             }
+            @if (room.Sensors.FirstOrDefault() is Readout sensor and not null && room.Rooms.FirstOrDefault() == null)
+            {
+                <button class="wide" disabled>
+                    @sensor.Name
+                    <ul>
+                        <li>@(sensor.Temperature)°C</li>
+                        @if (sensor.CO2 is not null)
+                        {
+                            <li>@(sensor.CO2)ppm</li>
+                        }
+                        <li>@(sensor.Humidity)%</li>
+                    </ul>
+                </button>
+            }
         </section>
     }
 </section>
@@ -70,15 +94,27 @@
 @code {
     [Parameter]
     public LocalHueClient LocalHueClient { get; set; } = default!;
+    [Parameter]
+    public ClimateSensors ClimateSensors { get; set; } = default!;
 
+    IEnumerable<Readout> sensors = [];
     IEnumerable<Light> lights = [];
 
-    IEnumerable<Group> rooms = [];
+    IEnumerable<Room> rooms = [];
+
+
+    record Room(string Name, IEnumerable<Readout> Sensors, IEnumerable<Q42.HueApi.Models.Groups.Group> Rooms);
 
     protected override async Task OnParametersSetAsync()
     {
-        rooms = (await LocalHueClient.GetGroupsAsync()).Where(g => g.Type == Q42.HueApi.Models.Groups.GroupType.Room);
+        sensors = await ClimateSensors.GetReadouts().ToArrayAsync();
+
+        var rooms_ = (await LocalHueClient.GetGroupsAsync()).Where(g => g.Type == Q42.HueApi.Models.Groups.GroupType.Room);
         lights = await LocalHueClient.GetLightsAsync();
+
+        rooms = sensors
+            .FullOuterGroupJoin(rooms_, s => s.Name, r => r.Name, (s, r, name) => new Room(name, s, r))
+            .Where(r => r.Name.Contains("$") == false);
     }
 
     DateTime buttonDownBegins = DateTime.MinValue;

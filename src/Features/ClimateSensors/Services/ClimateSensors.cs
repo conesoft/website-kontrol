@@ -1,22 +1,19 @@
-﻿using Netatmo;
+﻿using Conesoft.Tools;
+using Netatmo;
 using Netatmo.Models.Client.Weather.StationsData.DashboardData;
 using NodaTime;
 using System.Text.Json;
 using static Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization;
 
-namespace Conesoft_Website_Kontrol.Services;
+namespace Conesoft_Website_Kontrol.Features.ClimateSensors.Services;
 
-class ClimateSensors
+public class ClimateSensors(Client client, string tokenpath)
 {
-    Func<Client?> GetClient { get; set; } = () => null;
-
-    string tokenpath = "";
-
     public async Task RefreshToken()
     {
         var oldtoken = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
-        await GetClient()!.RefreshToken();
-        var newtoken = GetClient()!.CredentialManager.CredentialToken;
+        await client.RefreshToken();
+        var newtoken = client.CredentialManager.CredentialToken;
         var token = new AuthToken(oldtoken!.Scope, newtoken.AccessToken, newtoken.ExpiresIn, newtoken.RefreshToken);
         await File.WriteAllTextAsync(tokenpath, JsonSerializer.Serialize(token));
     }
@@ -25,23 +22,14 @@ class ClimateSensors
     {
         var token = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
         var ApiUrl = "https://api.netatmo.com";
-        return new()
-        {
-            tokenpath = tokenpath,
-            GetClient = () =>
-            {
-                var client = new Client(SystemClock.Instance, ApiUrl, clientId, secret);
-
-                client.ProvideOAuth2Token(token!.AccessToken, token!.RefreshToken);
-                return client;
-            }
-        };
+        var client = new Client(SystemClock.Instance, ApiUrl, clientId, secret);
+        client.ProvideOAuth2Token(token!.AccessToken, token!.RefreshToken);
+        return new(client, tokenpath);
     }
 
     public async IAsyncEnumerable<Readout> GetReadouts()
     {
-        Netatmo.Models.Client.DataResponse<Netatmo.Models.Client.Weather.GetStationsDataBody> stations = default!;
-        var client = GetClient()!;
+        Netatmo.Models.Client.DataResponse<Netatmo.Models.Client.Weather.GetStationsDataBody> stations;
         try
         {
             stations = await client.Weather.GetStationsData();
@@ -56,8 +44,8 @@ class ClimateSensors
             yield return new(d.ModuleName, d.DashboardData.Temperature, d.DashboardData.CO2, d.DashboardData.HumidityPercent);
             foreach (var m in d.Modules)
             {
-                var outdoor = m.Type == "NAModule1" ? m.GetDashboardData<OutdoorDashBoardData>() : null;
-                var indoor = m.Type == "NAModule4" ? m.GetDashboardData<IndoorDashBoardData>() : null;
+                var outdoor = Safe.Try(() => m.Type == "NAModule1" ? m.GetDashboardData<OutdoorDashBoardData>() : null);
+                var indoor = Safe.Try(() => m.Type == "NAModule4" ? m.GetDashboardData<IndoorDashBoardData>() : null);
 
                 if (outdoor != null || indoor != null)
                 {

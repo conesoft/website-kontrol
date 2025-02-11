@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Conesoft.Blazor.NetatmoAuth
+@using Conesoft_Website_Kontrol.Features.ClimateSensors.Services
 @using Conesoft_Website_Kontrol.Features.LightControls.Services
 @using Conesoft_Website_Kontrol.Services
 @using Q42.HueApi
@@ -13,15 +14,16 @@
 @implements IDisposable
 
 @inject IWhenAvailable<LocalHueClient> localHueClient
+@inject IWhenAvailable<ClimateSensors> climateSensors
 
 <PageTitle>Home Kontrol</PageTitle>
 
 <AuthorizeView Roles="Admin, Editor">
     <Authorized>
         <main>
-            @if (localHueClient.Instance is LocalHueClient client)
+            @if (localHueClient.Instance is LocalHueClient _localHueClient && climateSensors.Instance is ClimateSensors _climateSensors)
             {
-                <Rooms LocalHueClient="@client" />
+                <Rooms LocalHueClient="@_localHueClient" ClimateSensors="@_climateSensors" />
             }
         </main>
     </Authorized>
@@ -34,11 +36,17 @@
     {
         if (RendererInfo.IsInteractive)
         {
-            localHueClient.WhenAvailable(this, my =>
-            {
-                my.timer.Elapsed += async (_, _) => await InvokeAsync(StateHasChanged);
-                my.timer.Start();
-            });
+            localHueClient.WhenAvailable(this, my => my.Start());
+            climateSensors.WhenAvailable(this, my => my.Start());
+        }
+    }
+
+    private void Start()
+    {
+        if (localHueClient.Instance is LocalHueClient _localHueClient && climateSensors.Instance is ClimateSensors _climateSensors)
+        {
+            timer.Elapsed += async (_, _) => await InvokeAsync(StateHasChanged);
+            timer.Start();
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using Conesoft.Hosting;
 using Conesoft.PwaGenerator;
 using Conesoft_Website_Kontrol.Components;
+using Conesoft_Website_Kontrol.Features.ClimateSensors.Extensions;
 using Conesoft_Website_Kontrol.Features.LightControls.Extensions;
 using Conesoft_Website_Kontrol.Services;
 using Microsoft.Extensions.FileProviders;
@@ -13,14 +14,13 @@ builder
     .AddHostEnvironmentInfo()
     .AddLoggingService()
 
+    .AddClimateSensors()
     .AddLightControls()
     ;
 
 builder.Services
     .AddCompiledHashCacheBuster()
     .AddHttpClient()
-    //.AddSingleton(await ClimateSensors.Connect("", "", ""))
-    //.AddNetatmoTokenStorageOnDisk(pathGenerator: name => $@"{name}.json")
     .AddSingleton<NetworkScanner>()
 
     .AddRazorComponents().AddInteractiveServerComponents().AddCircuitOptions(options =>
