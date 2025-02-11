@@ -30,7 +30,7 @@ public class NetworkScanner
             var result = await ping.SendPingAsync(network + i, 1);
             if (result.Status == IPStatus.Success)
             {
-                var mac = Arp.Lookup(IPAddress.Parse(network + i));
+                var mac = await Arp.LookupAsync(IPAddress.Parse(network + i));
                 var vendor = "";
                 if (mac != null)
                 {

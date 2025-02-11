@@ -10,7 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="ArpLookup" Version="2.0.3" />
 		<PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
-		<PackageReference Include="Conesoft.Blazor.NetatmoAuth" Version="1.0.0" />
+		<PackageReference Include="Conesoft.Blazor.NetatmoAuth" Version="1.0.1" />
 		<PackageReference Include="Conesoft.Hosting" Version="3.4.14" />
 		<PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
 		<PackageReference Include="Q42.HueApi" Version="3.23.2" />
