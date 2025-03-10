@@ -1,10 +1,6 @@
 ﻿@page "/finances"
 
 @using Conesoft_Website_Kontrol.Components.Controls.Finances
-@using Humanizer
-@using Conesoft.Files
-@using Conesoft.Tools
-@using Serilog
 @using Conesoft.Hosting
 
 @inject HostEnvironment environment
@@ -26,60 +22,30 @@
 </main>
 
 @code {
-    List<Controls.Finances.Entry> Entries { get; set; } = new();
-
     Conesoft.Files.Directory Storage => environment.Local.Storage / "Finances";
-
     CancellationTokenSource? cts;
 
-    // [CascadingParameter]
-    // private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<Controls.Finances.Entry> Entries { get; set; } = new();
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        // var authenticationState = await authenticationStateTask;
-        // var user = authenticationState.User;
-        // var claims = user.Claims.ToArray();
         if (firstRender)
         {
-            var _ = Task.Run(async () =>
+            cts = Storage.Live(async () =>
             {
-                try
+                Entries = (await Task.WhenAll(Storage.Files.Where(f => f.Extension == "json").Select(async f =>
                 {
-                    cts = new();
-                    await foreach (var _ in Storage.Live(allDirectories: false, cts.Token))
+                    var entry = await f.WhenReady.ReadFromJson<Controls.Finances.Entry>();
+                    if (entry != null)
                     {
-                        Entries = (await Task.WhenAll(Storage.Files.Where(f => f.Extension == "json").Select(async f =>
-                        {
-                            try
-                            {
-                                var entry = await f.WhenReady.ReadFromJson<Controls.Finances.Entry>();
-                                if (entry != null)
-                                {
-                                    entry.PathToFile = f.Path;
-                                }
-                                return entry;
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Error("Exception: {exception}", e);
-                                return null;
-                            }
-                        }))).NotNull().ToList();
-                        await InvokeAsync(StateHasChanged);
+                        entry.PathToFile = f.Path;
                     }
-                }
-                catch (Exception e)
-                {
-                    Log.Error("Exception: {exception}", e);
-                }
+                    return entry;
+                }))).NotNull().ToList();
+                await InvokeAsync(StateHasChanged);
             });
         }
-        return base.OnAfterRenderAsync(firstRender);
     }
 
-    public void Dispose()
-    {
-        cts?.Cancel();
-    }
+    public void Dispose() => cts?.Cancel();
 }

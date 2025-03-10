@@ -40,7 +40,10 @@
             var SalaryDave = Entries.Where(e => e.Type == Entry.EntryType.Income && e.For == "davepermen").Sum(e => e.Amount);
             var TransferredByCaleigh = Entries.Where(e => e.Type == Entry.EntryType.Compensation && e.By == "caleighc" && e.To == "davepermen").Sum(e => e.Amount);
 
-            Amount = AllBills * SalaryCaleigh / (SalaryDave + SalaryCaleigh) - TransferredByCaleigh;
+            if (SalaryDave + SalaryCaleigh != 0)
+            {
+                Amount = AllBills * SalaryCaleigh / (SalaryDave + SalaryCaleigh) - TransferredByCaleigh;
+            }
         }
     }
 }

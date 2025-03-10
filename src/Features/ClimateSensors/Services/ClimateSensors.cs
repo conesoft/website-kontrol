@@ -1,45 +1,91 @@
-﻿using Conesoft.Tools;
+﻿using Conesoft.Files;
+using Conesoft.Tools;
 using Netatmo;
 using Netatmo.Models.Client.Weather.StationsData.DashboardData;
 using NodaTime;
+using Serilog;
 using System.Text.Json;
 using static Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization;
+using IO = System.IO;
 
 namespace Conesoft_Website_Kontrol.Features.ClimateSensors.Services;
 
-public class ClimateSensors(Client client, string tokenpath)
+public class ClimateSensors(string clientId, string secret, string tokenpath) : IDisposable
 {
+    CancellationTokenSource? cancellationTokenSource;
+    void IDisposable.Dispose() => cancellationTokenSource?.Cancel();
+
+    Client? client;
+
     public async Task RefreshToken()
     {
-        var oldtoken = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
-        await client.RefreshToken();
-        var newtoken = client.CredentialManager.CredentialToken;
-        var token = new AuthToken(oldtoken!.Scope, newtoken.AccessToken, newtoken.ExpiresIn, newtoken.RefreshToken);
-        await File.WriteAllTextAsync(tokenpath, JsonSerializer.Serialize(token));
+        if (client is not null)
+        {
+            try
+            {
+                var oldtoken = JsonSerializer.Deserialize<AuthToken>(await IO.File.ReadAllTextAsync(tokenpath));
+                await client.RefreshToken();
+                var newtoken = client.CredentialManager.CredentialToken;
+                var token = new AuthToken(oldtoken!.Scope, newtoken.AccessToken, newtoken.ExpiresIn, newtoken.RefreshToken);
+                await IO.File.WriteAllTextAsync(tokenpath, JsonSerializer.Serialize(token));
+            }
+            catch (Exception)
+            {
+                //IO.File.Delete(tokenpath);
+            }
+        }
     }
 
-    public static async Task<ClimateSensors> Connect(string clientId, string secret, string tokenpath)
+    AuthToken? authToken;
+
+    public void LiveConnect()
     {
-        var token = JsonSerializer.Deserialize<AuthToken>(await File.ReadAllTextAsync(tokenpath));
-        var ApiUrl = "https://api.netatmo.com";
-        var client = new Client(SystemClock.Instance, ApiUrl, clientId, secret);
-        client.ProvideOAuth2Token(token!.AccessToken, token!.RefreshToken);
-        return new(client, tokenpath);
+        var tokenfile = Conesoft.Files.File.From(tokenpath);
+        cancellationTokenSource = tokenfile.Live(async () =>
+        {
+            if (tokenfile.Exists)
+            {
+                var token = await tokenfile.ReadFromJson<AuthToken>();
+                Safe.Try(() =>
+                {
+                    var apiUrl = "https://api.netatmo.com";
+                    var client = new Client(SystemClock.Instance, apiUrl, clientId, secret);
+                    client.ProvideOAuth2Token(token!.AccessToken, token!.RefreshToken);
+                    this.client = client;
+                    authToken = token;
+                });
+            }
+            else
+            {
+                client = null;
+            }
+        });
     }
 
     public async IAsyncEnumerable<Readout> GetReadouts()
     {
-        Netatmo.Models.Client.DataResponse<Netatmo.Models.Client.Weather.GetStationsDataBody> stations;
+        if (client == null)
+        {
+            yield break;
+        }
+        Netatmo.Models.Client.Weather.StationsData.Device[] stations = [];
         try
         {
-            stations = await client.Weather.GetStationsData();
+            stations = (await client.Weather.GetStationsData()).Body.Devices;
         }
         catch (Exception)
         {
             await RefreshToken();
-            stations = await client.Weather.GetStationsData();
         }
-        foreach (var d in stations.Body.Devices)
+        try
+        {
+            stations = (await client.Weather.GetStationsData()).Body.Devices;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("netatmo/getstationsdata failed: {ex}", ex);
+        }
+        foreach (var d in stations)
         {
             yield return new(d.ModuleName, d.DashboardData.Temperature, d.DashboardData.CO2, d.DashboardData.HumidityPercent);
             foreach (var m in d.Modules)
@@ -67,7 +113,6 @@ public class ClimateSensors(Client client, string tokenpath)
                 }
             }
         }
-
     }
 }
 

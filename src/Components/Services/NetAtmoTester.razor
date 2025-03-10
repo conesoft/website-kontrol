@@ -1,4 +1,5 @@
 ﻿@page "/netatmotester"
+@using Conesoft.Blazor.NetatmoAuth
 @using Conesoft_Website_Kontrol.Features.ClimateSensors.Options
 @using Conesoft_Website_Kontrol.Features.ClimateSensors.Services
 @using Conesoft_Website_Kontrol.Tools.BackgroundInitialization
@@ -14,23 +15,23 @@
         <ul>
             @foreach (var readout in readouts)
             {
-                <li><section>@readout.Name @(readout.CO2)ppm @(readout.Temperature)°C @(readout.Humidity)%</section></li>
+                    <li><section>@readout.Name @(readout.CO2)ppm @(readout.Temperature)°C @(readout.Humidity)%</section></li>
             }
         </ul>
     </section>
     <AuthorizeView Roles="Admin">
         <Authorized>
             <section title="netatmo tester">
-                <Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization ClientId="@netAtmoConfiguration.Value.ClientId"
-                                                                  ClientSecret="@netAtmoConfiguration.Value.Secret"
-                                                                  Scopes="read_station read_thermostat read_presence read_homecoach">
+                <NetatmoAuthorization ClientId="@netAtmoConfiguration.Value.ClientId"
+                                      ClientSecret="@netAtmoConfiguration.Value.Secret"
+                                      Scopes="read_station">
                     <Authorized Context="netatmoContext">
                         <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Logout @netatmoContext.Username (in @netatmoContext.Home)
                     </Authorized>
                     <NotAuthorized>
                         <img style="height: 1rem" src="/services/3rd-party/logo-netatmo.png" /> Authorize Netatmo
                     </NotAuthorized>
-                </Conesoft.Blazor.NetatmoAuth.NetatmoAuthorization>
+                </NetatmoAuthorization>
             </section>
 
         </Authorized>
