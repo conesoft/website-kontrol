@@ -16,25 +16,19 @@ builder
 
     .AddClimateSensors()
     .AddLightControls()
+
+    .AddCompiledHashCacheBuster()
+    .AddHostingDefaults()
     ;
 
 builder.Services
-    .AddCompiledHashCacheBuster()
-    .AddHttpClient()
     .AddSingleton<NetworkScanner>()
-
-    .AddRazorComponents().AddInteractiveServerComponents().AddCircuitOptions(options =>
-    {
-        options.DetailedErrors = true;
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(0);
-        options.DisconnectedCircuitMaxRetained = 0;
-    });
+    ;
 
 var app = builder.Build();
 
-var section = app.Configuration.GetSection("philips-hue");
-
 app
+    .UseCompiledHashCacheBuster()
     .UseStaticFiles(new StaticFileOptions
     {
         RequestPath = "/content/feeds/thumbnail",

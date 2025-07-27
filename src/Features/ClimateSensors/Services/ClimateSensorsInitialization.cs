@@ -6,11 +6,11 @@ namespace Conesoft_Website_Kontrol.Features.ClimateSensors.Services;
 
 public class ClimateSensorsInitialization(IOptions<Options.NetatmoOptions> options, Storage storage) : BackgroundInitializationWhenAvailable<ClimateSensors>
 {
-    public override async Task<ClimateSensors> Initialize(CancellationToken cancellationToken)
+    public override Task<ClimateSensors> Initialize(CancellationToken cancellationToken)
     {
         var sensors = new ClimateSensors(options.Value.ClientId, options.Value.Secret, storage.GeneratePath("token"));
         sensors.LiveConnect();
-        return sensors;
+        return Task.FromResult(sensors);
 
     }
 }

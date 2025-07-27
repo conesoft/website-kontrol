@@ -8,7 +8,7 @@ public class Wrapped<T>
     private Wrapped(Func<Task<T>> generator, TimeSpan every)
     {
         t = generator();
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             var timer = new PeriodicTimer(every);
             do
